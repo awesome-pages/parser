@@ -1,20 +1,22 @@
 #!/usr/bin/env node
-import fs from "node:fs";
 import 'dotenv/config';
-import { readmeToAst } from "./parse.js";
-import { mdastToDomain } from "./normalize.js";
+import { markdownToAst } from '@/core/parser.js';
+import { mdastToDomain } from '@/core/mdastToDomain.js';
 
-const input = process.argv[2] || "README.md";
-const output = process.argv[3] || "readme.domain.json";
+const input = process.argv[2] || 'README.md';
 
 (async () => {
-  const { tree, metaHints } = await readmeToAst(input);
-  const domain = mdastToDomain(tree, metaHints);
-  const schemaUrl = process.env.AWESOME_LIST_SCHEMA || "https://teles.dev.br/schemas/awesome-list/v1.json";
+  const { tree, title, description, frontmatter } = await markdownToAst(input);
+  const domain = mdastToDomain(tree, {
+    title,
+    description,
+    frontmatter,
+    source: input,
+  });
+  const schemaUrl = process.env.AWESOME_LIST_SCHEMA;
   const withSchema = {
-    "$schema": schemaUrl,
-    ...domain
+    $schema: schemaUrl,
+    ...domain,
   };
-  fs.writeFileSync(output, JSON.stringify(withSchema, null, 2));
-  console.log(`✅ JSON generated in ${output}`);
+  console.log(JSON.stringify(withSchema, null, 2));
 })();
