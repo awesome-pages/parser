@@ -9,7 +9,11 @@
     "rootDir": ".",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
-  "include": ["src", "test", "schemas"]
+  "include": ["src"]
 }
