@@ -121,7 +121,11 @@ function extractMetadata(
       }
     }
 
-    if (!description && foundH1 && node.type === 'paragraph') {
+    if (
+      !description &&
+      (foundH1 || frontmatter?.title) &&
+      node.type === 'paragraph'
+    ) {
       if (!foundFirstParagraph) {
         const para = node as Paragraph;
         description = extractText(para as RootContent).trim();
