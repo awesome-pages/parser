@@ -15,6 +15,7 @@ import {
   type SectionV1,
   type ItemV1,
 } from '@/schemas/domain.v1.js';
+import { computeDeterministicItemId } from '@/helpers/computeDeterministicItemId';
 
 interface Options {
   title?: string | null;
@@ -110,15 +111,15 @@ export function mdastToDomain(tree: Root, opts: Options = {}) {
         }
         const description =
           descParts.join(' ').replace(/\s+/g, ' ').trim() || null;
-
+        const id = computeDeterministicItemId(currentSectionId, title);
         const item = ItemV1Schema.parse({
+          id,
           sectionId: currentSectionId,
           title,
           url,
           description,
           order: itemOrder++,
         });
-
         items.push(item);
       }
     }

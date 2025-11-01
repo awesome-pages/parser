@@ -29,6 +29,7 @@ export const SectionV1Schema = SectionIn.transform((s) => {
 export type SectionV1 = z.infer<typeof SectionV1Schema>;
 
 export const ItemIn = z.object({
+  id: NonEmpty,
   sectionId: NonEmpty,
   title: NonEmpty,
   url: z.string().url().optional(),
@@ -40,7 +41,7 @@ export const ItemIn = z.object({
 export type ItemIn = z.infer<typeof ItemIn>;
 
 export const ItemV1Schema = ItemIn.transform((i) => ({
-  id: slugify(i.title),
+  id: i.id,
   sectionId: i.sectionId,
   title: i.title.trim(),
   url: i.url,
