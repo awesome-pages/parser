@@ -16,6 +16,7 @@ import {
   type ItemV1,
 } from '@/schemas/domain.v1.js';
 import { computeDeterministicItemId } from '@/core/helpers/computeDeterministicItemId.js';
+import extractInlineTags from '@/core/helpers/extractInlineTags';
 
 interface Options {
   title?: string | null;
@@ -111,7 +112,12 @@ export function mdastToDomain(tree: Root, opts: Options) {
         }
         // Normalize description and remove leading separators like '-', '–', '—', ':'
         const rawDesc = descParts.join(' ').replace(/\s+/g, ' ').trim();
-        const description = rawDesc ? rawDesc.replace(/^[-–—:]\s+/, '') : null;
+        const normalized = rawDesc ? rawDesc.replace(/^[\s-–—:]+/, '') : '';
+        const { clean, tags } = normalized
+          ? extractInlineTags(normalized)
+          : { clean: '', tags: [] };
+        const description = clean || null;
+
         const id = computeDeterministicItemId(currentSectionId, title);
         const item = ItemV1Schema.parse({
           id,
@@ -120,6 +126,7 @@ export function mdastToDomain(tree: Root, opts: Options) {
           url,
           description,
           order: itemOrder++,
+          tags,
         });
         items.push(item);
       }
