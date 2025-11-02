@@ -1,4 +1,4 @@
-import slugify from '@/helpers/slugify';
+import slugify from '@/schemas/helpers/slugify';
 import { z } from 'zod';
 
 const NonEmpty = z.string().trim().min(1);

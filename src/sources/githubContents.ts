@@ -8,16 +8,7 @@ import {
   GitHubApiError,
 } from '@/sources/errors';
 import { resolveGithubToken } from '@/sources/resolveGithubToken';
-
-type FetchLike = (
-  input: string,
-  init?: { headers?: Record<string, string> }
-) => Promise<{
-  ok: boolean;
-  status: number;
-  json(): Promise<unknown>;
-  text(): Promise<string>;
-}>;
+import { resolveFetch } from '@/sources/helpers/resolveFetch';
 
 const GHContentsSchema = z.object({
   content: z.string(),
@@ -52,10 +43,7 @@ export class GitHubContentsApiSource implements MarkdownSource {
       }));
     if (token) headers.Authorization = `Bearer ${token}`;
 
-    // resolve fetch at runtime: use global fetch if available, otherwise fall back to node-fetch (ESM)
-    const fetchFn: FetchLike =
-      (globalThis as unknown as { fetch?: FetchLike }).fetch ??
-      ((await import('node-fetch')).default as unknown as FetchLike);
+    const fetchFn = await resolveFetch();
 
     // --- RAW-FIRST when no token (fast path for public repos) ---
     let rawFallbackHint: MarkdownSourceError | null = null;

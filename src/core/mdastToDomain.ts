@@ -15,7 +15,7 @@ import {
   type SectionV1,
   type ItemV1,
 } from '@/schemas/domain.v1.js';
-import { computeDeterministicItemId } from '@/helpers/computeDeterministicItemId';
+import { computeDeterministicItemId } from '@/core/helpers/computeDeterministicItemId.js';
 
 interface Options {
   title?: string | null;
