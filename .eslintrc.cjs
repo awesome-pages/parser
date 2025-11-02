@@ -12,6 +12,13 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
   ],
-  ignorePatterns: ['dist', 'node_modules', '*.config.js', 'vitest.config.ts'],
+  ignorePatterns: [
+    '.eslintrc.cjs',
+    'dist',
+    'node_modules',
+    '*.config.js',
+    'vitest.config.ts',
+    'src/tests/fixtures/**/*.json',
+  ],
   rules: {},
 };
