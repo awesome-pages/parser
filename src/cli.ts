@@ -22,7 +22,7 @@ const input = 'src/tests/fixtures/readmes/awesome-click-and-use.md';
     title,
     description,
     frontmatter,
-    source: input,
+    source: source.id(),
   });
   const schemaUrl = process.env.AWESOME_LIST_SCHEMA;
   const withSchema = {
