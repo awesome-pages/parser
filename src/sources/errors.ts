@@ -51,3 +51,16 @@ export class GithubTokenResolutionError extends Error {
     this.name = 'GithubTokenResolutionError';
   }
 }
+
+export class UnsupportedMimeTypeError extends MarkdownSourceError {
+  constructor(
+    public url: string,
+    public contentType: string | null,
+    public allowed: readonly string[]
+  ) {
+    super(
+      `Invalid content-type '${contentType ?? 'null'}' for ${url}. Allowed: ${allowed.join(', ')}`,
+      'UNSUPPORTED_MIME'
+    );
+  }
+}

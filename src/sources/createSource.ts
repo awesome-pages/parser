@@ -1,6 +1,7 @@
 import { GitHubContentsApiSource } from '@/sources/githubContents';
 import { LocalFileSource } from '@/sources/localFile';
 import type { MarkdownSource } from '@/sources/types';
+import { HttpRawSource } from '@/sources/httpRawSource';
 
 export interface CreateSourceOpts {
   githubToken?: string;
@@ -21,6 +22,10 @@ export function createSource(
       filePath,
       opts.githubToken
     );
+  }
+  if (/^https?:\/\//i.test(input)) {
+    console.log('Creating HttpRawSource for', input);
+    return new HttpRawSource(input);
   }
 
   return new LocalFileSource(input);
