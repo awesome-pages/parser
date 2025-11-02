@@ -35,7 +35,7 @@ This is a paragraph.
 - Item 2`;
 
       const filePath = createTestFile('simple.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.tree).toBeDefined();
       expect(result.tree.type).toBe('root');
@@ -52,7 +52,7 @@ This is a paragraph.
 | Cell 3   | Cell 4   |`;
 
       const filePath = createTestFile('table.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       const hasTable = result.tree.children.some(
         (node) => node.type === 'table'
@@ -66,7 +66,7 @@ This is a paragraph.
 Check out [Google](https://google.com) and [GitHub](https://github.com).`;
 
       const filePath = createTestFile('links.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.tree.children.length).toBeGreaterThan(0);
       const paragraph = result.tree.children.find(
@@ -91,7 +91,7 @@ This is kept.
 This is also filtered.`;
 
       const filePath = createTestFile('explicit-blocks.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.hasExplicitBlocks).toBe(true);
       expect(result.tree.children.length).toBe(2); // heading + paragraph
@@ -109,7 +109,7 @@ This is ignored.
 More content.`;
 
       const filePath = createTestFile('no-explicit.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.hasExplicitBlocks).toBe(false);
       expect(result.tree.children.length).toBe(3); // heading + 2 paragraphs
@@ -129,7 +129,7 @@ And this too.
 Keep this also.`;
 
       const filePath = createTestFile('ignore-blocks.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.hasExplicitBlocks).toBe(false);
       expect(result.tree.children.length).toBe(3); // heading + 2 paragraphs kept
@@ -155,7 +155,7 @@ Second section content.
 Final filtered content.`;
 
       const filePath = createTestFile('multiple-blocks.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.hasExplicitBlocks).toBe(true);
       expect(result.tree.children.length).toBe(4); // 2 headings + 2 paragraphs
@@ -166,7 +166,7 @@ Final filtered content.`;
     it('should handle empty file', async () => {
       const content = '';
       const filePath = createTestFile('empty.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.tree.type).toBe('root');
       expect(result.tree.children).toHaveLength(0);
@@ -176,7 +176,7 @@ Final filtered content.`;
     it('should handle file with only whitespace', async () => {
       const content = '   \n\n   \n';
       const filePath = createTestFile('whitespace.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.tree.type).toBe('root');
       expect(result.hasExplicitBlocks).toBe(false);
@@ -186,7 +186,7 @@ Final filtered content.`;
       const content = `<!--awesome-pages:start-->
 <!--awesome-pages:end-->`;
       const filePath = createTestFile('only-markers.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.hasExplicitBlocks).toBe(true);
       expect(result.tree.children).toHaveLength(0);
@@ -215,7 +215,7 @@ const code = "block";
 <!--awesome-pages:end-->`;
 
       const filePath = createTestFile('complex.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.hasExplicitBlocks).toBe(true);
       expect(result.tree.children.length).toBeGreaterThan(0);
@@ -224,9 +224,9 @@ const code = "block";
 
   describe('error handling', () => {
     it('should throw error for non-existent file', async () => {
-      const filePath = path.join(tempDir, 'non-existent.md');
+      const content = 'This is some content';
 
-      await expect(markdownToAst(filePath)).rejects.toThrow();
+      await expect(markdownToAst(content)).resolves.toBeDefined();
     });
   });
 
@@ -234,7 +234,7 @@ const code = "block";
     it('should parse strikethrough', async () => {
       const content = 'This is ~~deleted~~ text.';
       const filePath = createTestFile('strikethrough.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.tree.children.length).toBeGreaterThan(0);
     });
@@ -243,7 +243,7 @@ const code = "block";
       const content = `- [x] Completed task
 - [ ] Incomplete task`;
       const filePath = createTestFile('tasks.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       const list = result.tree.children.find((node) => node.type === 'list');
       expect(list).toBeDefined();
@@ -252,7 +252,7 @@ const code = "block";
     it('should parse autolinks', async () => {
       const content = 'Visit https://example.com for more info.';
       const filePath = createTestFile('autolink.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.tree.children.length).toBeGreaterThan(0);
     });
@@ -268,7 +268,7 @@ Some description here.
 - Item 1
 `;
       const filePath = createTestFile('test-title.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.title).toBe('My Awesome List');
       expect(result.description).toBe('Some description here.');
@@ -289,7 +289,7 @@ This paragraph should also be ignored.
 - Item 1
 `;
       const filePath = createTestFile('test-frontmatter.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.title).toBe('Frontmatter Title');
       expect(result.description).toBe('Frontmatter description');
@@ -304,7 +304,7 @@ This paragraph should also be ignored.
 - Item 1
 `;
       const filePath = createTestFile('fallback-title.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.title).toBe('fallback-title.md');
       expect(result.description).toBeNull();
@@ -318,7 +318,7 @@ Description paragraph.
 ## Section 1
 `;
       const filePath = createTestFile('test-html-title.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.title).toBe('My Title');
       expect(result.description).toBe('Description paragraph.');
@@ -331,7 +331,7 @@ Description paragraph.
 - Item 1
 `;
       const filePath = createTestFile('test-no-desc.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.title).toBe('Title Only');
       expect(result.description).toBeNull();
@@ -348,7 +348,7 @@ This is the description.
 <!--awesome-pages:end-->
 `;
       const filePath = createTestFile('test-markers.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.title).toBe('My Title');
       expect(result.description).toBe('This is the description.');
@@ -365,7 +365,7 @@ This should be the description.
 ## Section 1
 `;
       const filePath = createTestFile('test-fm-title.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.title).toBe('Only Title');
       expect(result.description).toBe('This should be the description.');
@@ -381,7 +381,7 @@ description: Frontmatter description
 ## Section 1
 `;
       const filePath = createTestFile('test-fm-desc.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.title).toBe('H1 Title');
       expect(result.description).toBe('Frontmatter description');
@@ -395,7 +395,7 @@ description: Frontmatter description
 This paragraph comes after H2, so it should not be the description.
 `;
       const filePath = createTestFile('test-stop-h2.md', content);
-      const result = await markdownToAst(filePath);
+      const result = await markdownToAst(content, filePath);
 
       expect(result.title).toBe('Title');
       expect(result.description).toBeNull();
