@@ -1,6 +1,6 @@
 function extractInlineTags(desc: string): { clean: string; tags: string[] } {
   // Match trailing parenthesized tags e.g., "... description (#ai #llm)"
-  const m = desc.match(/\((\s*#[a-z0-9_-]+(?:\s+#[a-z0-9_-]+)*)\)\s*$/i);
+  const m = desc.match(/\((\s*#[a-z0-9_-]+(?:\s+#[a-z0-9_-]+)*\s*)\)\s*$/i);
   if (!m) return { clean: desc, tags: [] };
   const rawTags = m[1]
     .trim()
