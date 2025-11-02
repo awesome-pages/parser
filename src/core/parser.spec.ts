@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { markdownToAst } from '@/core/parser.js';
 import fs from 'node:fs';
+import fsPromises from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 
@@ -399,6 +400,190 @@ This paragraph comes after H2, so it should not be the description.
 
       expect(result.title).toBe('Title');
       expect(result.description).toBeNull();
+    });
+  });
+
+  describe('metadata extraction from fixtures', () => {
+    it('should extract title only when no description paragraph exists', async () => {
+      const content = await fsPromises.readFile(
+        'src/tests/fixtures/readmes/only-h1.md',
+        'utf8'
+      );
+      const result = await markdownToAst(
+        content,
+        'src/tests/fixtures/readmes/only-h1.md'
+      );
+
+      expect(result.title).toBe('My Awesome Title');
+      expect(result.description).toBeNull();
+      expect(result.frontmatter).toBeNull();
+    });
+
+    it('should extract both title and description from H1 and first paragraph', async () => {
+      const content = await fsPromises.readFile(
+        'src/tests/fixtures/readmes/h1-with-description.md',
+        'utf8'
+      );
+      const result = await markdownToAst(
+        content,
+        'src/tests/fixtures/readmes/h1-with-description.md'
+      );
+
+      expect(result.title).toBe('Awesome Tools Collection');
+      expect(result.description).toBe(
+        'This is a curated list of amazing tools that developers love to use.'
+      );
+      expect(result.frontmatter).toBeNull();
+    });
+
+    it('should use filename when no H1 exists', async () => {
+      const content = await fsPromises.readFile(
+        'src/tests/fixtures/readmes/no-h1.md',
+        'utf8'
+      );
+      const result = await markdownToAst(
+        content,
+        'src/tests/fixtures/readmes/no-h1.md'
+      );
+
+      expect(result.title).toBe('no-h1.md');
+      expect(result.description).toBeNull();
+      expect(result.frontmatter).toBeNull();
+    });
+
+    it('should extract title but no description when H1 has no following paragraph', async () => {
+      const content = await fsPromises.readFile(
+        'src/tests/fixtures/readmes/h1-no-paragraph.md',
+        'utf8'
+      );
+      const result = await markdownToAst(
+        content,
+        'src/tests/fixtures/readmes/h1-no-paragraph.md'
+      );
+
+      expect(result.title).toBe('Title Without Description');
+      expect(result.description).toBeNull();
+      expect(result.frontmatter).toBeNull();
+    });
+
+    it('should use frontmatter title and extract description from paragraph', async () => {
+      const content = await fsPromises.readFile(
+        'src/tests/fixtures/readmes/frontmatter-partial.md',
+        'utf8'
+      );
+      const result = await markdownToAst(
+        content,
+        'src/tests/fixtures/readmes/frontmatter-partial.md'
+      );
+
+      expect(result.title).toBe('Title from Frontmatter Only');
+      expect(result.description).toBe(
+        "This paragraph should be the description since frontmatter doesn't have description field."
+      );
+      expect(result.frontmatter).toEqual({
+        title: 'Title from Frontmatter Only',
+      });
+    });
+
+    it('should use frontmatter description and H1 title', async () => {
+      const content = await fsPromises.readFile(
+        'src/tests/fixtures/readmes/frontmatter-description-only.md',
+        'utf8'
+      );
+      const result = await markdownToAst(
+        content,
+        'src/tests/fixtures/readmes/frontmatter-description-only.md'
+      );
+
+      expect(result.title).toBe('Title from H1');
+      expect(result.description).toBe('Description from frontmatter only');
+      expect(result.frontmatter).toEqual({
+        description: 'Description from frontmatter only',
+      });
+    });
+
+    it('should clean HTML and images from H1 title', async () => {
+      const content = await fsPromises.readFile(
+        'src/tests/fixtures/readmes/h1-with-html.md',
+        'utf8'
+      );
+      const result = await markdownToAst(
+        content,
+        'src/tests/fixtures/readmes/h1-with-html.md'
+      );
+
+      expect(result.title).toBe('Awesome List');
+      expect(result.description).toBe(
+        'A description with bold and italic text.'
+      );
+    });
+
+    it('should extract only first paragraph as description', async () => {
+      const content = await fsPromises.readFile(
+        'src/tests/fixtures/readmes/multiple-paragraphs.md',
+        'utf8'
+      );
+      const result = await markdownToAst(
+        content,
+        'src/tests/fixtures/readmes/multiple-paragraphs.md'
+      );
+
+      expect(result.title).toBe('Title');
+      expect(result.description).toBe(
+        'First paragraph should be the description.'
+      );
+    });
+
+    it('should extract title and description from outside markers', async () => {
+      const content = await fsPromises.readFile(
+        'src/tests/fixtures/readmes/with-markers-outside.md',
+        'utf8'
+      );
+      const result = await markdownToAst(
+        content,
+        'src/tests/fixtures/readmes/with-markers-outside.md'
+      );
+
+      expect(result.title).toBe('Title Outside Markers');
+      expect(result.description).toBe('Description outside markers.');
+      expect(result.hasExplicitBlocks).toBe(true);
+    });
+
+    it('should use existing with-frontmatter.md fixture correctly', async () => {
+      const content = await fsPromises.readFile(
+        'src/tests/fixtures/readmes/with-frontmatter.md',
+        'utf8'
+      );
+      const result = await markdownToAst(
+        content,
+        'src/tests/fixtures/readmes/with-frontmatter.md'
+      );
+
+      expect(result.title).toBe('My Awesome List with Frontmatter');
+      expect(result.description).toBe(
+        'This description comes from frontmatter metadata'
+      );
+      expect(result.frontmatter).toEqual({
+        title: 'My Awesome List with Frontmatter',
+        description: 'This description comes from frontmatter metadata',
+      });
+    });
+
+    it('should use existing awesome-click-and-use.md fixture correctly', async () => {
+      const content = await fsPromises.readFile(
+        'src/tests/fixtures/readmes/awesome-click-and-use.md',
+        'utf8'
+      );
+      const result = await markdownToAst(
+        content,
+        'src/tests/fixtures/readmes/awesome-click-and-use.md'
+      );
+
+      expect(result.title).toBe('Awesome Click and Use');
+      expect(result.description).toBe(
+        'Useful and awesome online tools that I often use. No download, no signup required.'
+      );
+      expect(result.frontmatter).toBeNull();
     });
   });
 });
