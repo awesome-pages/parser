@@ -23,7 +23,6 @@ export const SectionV1Schema = SectionIn.transform((s) => {
     order: s.order,
     path,
     descriptionHtml: s.descriptionHtml ?? null,
-    tags: [] as string[],
   };
 });
 export type SectionV1 = z.infer<typeof SectionV1Schema>;

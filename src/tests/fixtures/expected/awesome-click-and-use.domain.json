@@ -15,8 +15,7 @@
       "depth": 0,
       "order": 0,
       "path": "ai",
-      "descriptionHtml": null,
-      "tags": []
+      "descriptionHtml": null
     },
     {
       "id": "design",
@@ -25,8 +24,7 @@
       "depth": 0,
       "order": 1,
       "path": "design",
-      "descriptionHtml": null,
-      "tags": []
+      "descriptionHtml": null
     }
   ],
   "items": [
@@ -38,7 +36,7 @@
       "description": "Conversational model",
       "descriptionHtml": null,
       "order": 0,
-      "tags": []
+      "tags": ["ai", "llm"]
     },
     {
       "id": "claude",
