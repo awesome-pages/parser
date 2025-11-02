@@ -6,7 +6,7 @@ Useful and awesome online tools that I often use. No download, no signup require
 
 ## AI
 
-- [ChatGPT](https://chat.openai.com/) - Conversational model
+- [ChatGPT](https://chat.openai.com/) - Conversational model (#ai #llm)
 - [Claude](https://claude.ai/) - AI assistant by Anthropic
 
 ## Design
