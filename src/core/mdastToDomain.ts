@@ -51,7 +51,7 @@ function findFirstLink(p: Paragraph): Link | null {
   return null;
 }
 
-export function mdastToDomain(tree: Root, opts: Options = {}) {
+export function mdastToDomain(tree: Root, opts: Options) {
   const sections: SectionV1[] = [];
   const items: ItemV1[] = [];
 
