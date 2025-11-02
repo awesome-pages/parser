@@ -59,7 +59,7 @@ export const DomainV1Schema = z
       title: z.string().optional(),
       description: z.string().optional(),
       generatedAt: z.string().datetime(),
-      source: z.string().optional(),
+      source: z.string().min(1),
       frontmatter: z.record(z.any()).optional(),
     }),
     sections: z.array(SectionV1Schema),

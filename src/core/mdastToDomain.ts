@@ -22,7 +22,7 @@ interface Options {
   description?: string | null;
   frontmatter?: Record<string, unknown> | null;
   generatedAt?: string;
-  source?: string;
+  source: string;
   strict?: boolean;
 }
 
