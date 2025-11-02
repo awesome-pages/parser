@@ -1,5 +1,5 @@
-const slugify = (s: string) =>
-  s
+const slugify = (input: string) =>
+  input
     .trim()
     .toLowerCase()
     .normalize('NFD')

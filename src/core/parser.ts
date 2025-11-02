@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import path from 'node:path';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
@@ -72,7 +71,7 @@ function parseFrontmatter(yamlContent: string): Record<string, unknown> | null {
 
 function extractMetadata(
   tree: Root,
-  filePath: string
+  sourceId?: string
 ): {
   title: string | null;
   description: string | null;
@@ -142,16 +141,17 @@ function extractMetadata(
     }
   }
 
-  if (!title) {
-    title = path.basename(filePath);
+  if (!title && sourceId) {
+    title = path.basename(sourceId);
   }
 
   return { title, description, frontmatter };
 }
 
-export async function markdownToAst(filePath: string): Promise<ParsedAst> {
-  const markdown = fs.readFileSync(filePath, 'utf8');
-
+export async function markdownToAst(
+  markdown: string,
+  sourceId?: string
+): Promise<ParsedAst> {
   const processor = unified()
     .use(remarkParse)
     .use(remarkGfm)
@@ -162,10 +162,10 @@ export async function markdownToAst(filePath: string): Promise<ParsedAst> {
 
   const { title, description, frontmatter } = extractMetadata(
     fullTree,
-    filePath
+    sourceId
   );
 
-  const vfile = new VFile({ value: markdown, path: filePath });
+  const vfile = new VFile({ value: markdown, path: sourceId });
   const transformedTree = await processor.run(fullTree, vfile);
 
   const data = vfile.data as AwesomePagesData;

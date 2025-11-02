@@ -109,8 +109,9 @@ export function mdastToDomain(tree: Root, opts: Options = {}) {
           if (ch === link) continue;
           if (ch.type === 'text') descParts.push((ch as Text).value);
         }
-        const description =
-          descParts.join(' ').replace(/\s+/g, ' ').trim() || null;
+        // Normalize description and remove leading separators like '-', '–', '—', ':'
+        const rawDesc = descParts.join(' ').replace(/\s+/g, ' ').trim();
+        const description = rawDesc ? rawDesc.replace(/^[-–—:]\s+/, '') : null;
         const id = computeDeterministicItemId(currentSectionId, title);
         const item = ItemV1Schema.parse({
           id,
