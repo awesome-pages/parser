@@ -10,27 +10,27 @@ import slugify from '@/schemas/helpers/slugify';
 const takenBySection = new Map<string, Set<string>>();
 
 export function computeDeterministicItemId(
-  sectionId: string,
-  title: string
+	sectionId: string,
+	title: string,
 ): string {
-  // get or create the Set for this section
-  let taken = takenBySection.get(sectionId);
-  if (!taken) {
-    taken = new Set<string>();
-    takenBySection.set(sectionId, taken);
-  }
+	// get or create the Set for this section
+	let taken = takenBySection.get(sectionId);
+	if (!taken) {
+		taken = new Set<string>();
+		takenBySection.set(sectionId, taken);
+	}
 
-  // create a clean slug
-  const base = slugify(title);
-  let candidate = base;
-  let n = 2;
+	// create a clean slug
+	const base = slugify(title);
+	let candidate = base;
+	let n = 2;
 
-  // resolve collisions inside the same section
-  while (taken.has(candidate)) {
-    candidate = `${base}-${n++}`;
-  }
+	// resolve collisions inside the same section
+	while (taken.has(candidate)) {
+		candidate = `${base}-${n++}`;
+	}
 
-  // mark as taken and return
-  taken.add(candidate);
-  return candidate;
+	// mark as taken and return
+	taken.add(candidate);
+	return candidate;
 }

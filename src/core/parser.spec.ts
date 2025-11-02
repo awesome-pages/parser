@@ -1,32 +1,32 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { markdownToAst } from '@/core/parser.js';
 import fs from 'node:fs';
 import fsPromises from 'node:fs/promises';
-import path from 'node:path';
 import os from 'node:os';
+import path from 'node:path';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { markdownToAst } from '@/core/parser.js';
 
 describe('markdownToAst', () => {
-  let tempDir: string;
+	let tempDir: string;
 
-  beforeAll(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'parser-test-'));
-  });
+	beforeAll(() => {
+		tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'parser-test-'));
+	});
 
-  afterAll(() => {
-    if (fs.existsSync(tempDir)) {
-      fs.rmSync(tempDir, { recursive: true, force: true });
-    }
-  });
+	afterAll(() => {
+		if (fs.existsSync(tempDir)) {
+			fs.rmSync(tempDir, { recursive: true, force: true });
+		}
+	});
 
-  const createTestFile = (filename: string, content: string): string => {
-    const filePath = path.join(tempDir, filename);
-    fs.writeFileSync(filePath, content, 'utf8');
-    return filePath;
-  };
+	const createTestFile = (filename: string, content: string): string => {
+		const filePath = path.join(tempDir, filename);
+		fs.writeFileSync(filePath, content, 'utf8');
+		return filePath;
+	};
 
-  describe('basic parsing', () => {
-    it('should parse simple markdown to AST', async () => {
-      const content = `# Hello World
+	describe('basic parsing', () => {
+		it('should parse simple markdown to AST', async () => {
+			const content = `# Hello World
 
 This is a paragraph.
 
@@ -35,51 +35,51 @@ This is a paragraph.
 - Item 1
 - Item 2`;
 
-      const filePath = createTestFile('simple.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('simple.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.tree).toBeDefined();
-      expect(result.tree.type).toBe('root');
-      expect(result.tree.children.length).toBeGreaterThan(0);
-      expect(result.hasExplicitBlocks).toBe(false);
-    });
+			expect(result.tree).toBeDefined();
+			expect(result.tree.type).toBe('root');
+			expect(result.tree.children.length).toBeGreaterThan(0);
+			expect(result.hasExplicitBlocks).toBe(false);
+		});
 
-    it('should parse markdown with GFM tables', async () => {
-      const content = `# Table Example
+		it('should parse markdown with GFM tables', async () => {
+			const content = `# Table Example
 
 | Column 1 | Column 2 |
 |----------|----------|
 | Cell 1   | Cell 2   |
 | Cell 3   | Cell 4   |`;
 
-      const filePath = createTestFile('table.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('table.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      const hasTable = result.tree.children.some(
-        (node) => node.type === 'table'
-      );
-      expect(hasTable).toBe(true);
-    });
+			const hasTable = result.tree.children.some(
+				(node) => node.type === 'table',
+			);
+			expect(hasTable).toBe(true);
+		});
 
-    it('should parse markdown with links', async () => {
-      const content = `# Links
+		it('should parse markdown with links', async () => {
+			const content = `# Links
 
 Check out [Google](https://google.com) and [GitHub](https://github.com).`;
 
-      const filePath = createTestFile('links.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('links.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.tree.children.length).toBeGreaterThan(0);
-      const paragraph = result.tree.children.find(
-        (node) => node.type === 'paragraph'
-      );
-      expect(paragraph).toBeDefined();
-    });
-  });
+			expect(result.tree.children.length).toBeGreaterThan(0);
+			const paragraph = result.tree.children.find(
+				(node) => node.type === 'paragraph',
+			);
+			expect(paragraph).toBeDefined();
+		});
+	});
 
-  describe('awesome-pages markers', () => {
-    it('should detect explicit blocks when start marker is present', async () => {
-      const content = `# Before
+	describe('awesome-pages markers', () => {
+		it('should detect explicit blocks when start marker is present', async () => {
+			const content = `# Before
 
 This is filtered.
 
@@ -91,15 +91,15 @@ This is kept.
 
 This is also filtered.`;
 
-      const filePath = createTestFile('explicit-blocks.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('explicit-blocks.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.hasExplicitBlocks).toBe(true);
-      expect(result.tree.children.length).toBe(2); // heading + paragraph
-    });
+			expect(result.hasExplicitBlocks).toBe(true);
+			expect(result.tree.children.length).toBe(2); // heading + paragraph
+		});
 
-    it('should not detect explicit blocks when no start marker', async () => {
-      const content = `# Hello
+		it('should not detect explicit blocks when no start marker', async () => {
+			const content = `# Hello
 
 Just regular content.
 
@@ -109,15 +109,15 @@ This is ignored.
 
 More content.`;
 
-      const filePath = createTestFile('no-explicit.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('no-explicit.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.hasExplicitBlocks).toBe(false);
-      expect(result.tree.children.length).toBe(3); // heading + 2 paragraphs
-    });
+			expect(result.hasExplicitBlocks).toBe(false);
+			expect(result.tree.children.length).toBe(3); // heading + 2 paragraphs
+		});
 
-    it('should filter ignore blocks without explicit blocks', async () => {
-      const content = `# Content
+		it('should filter ignore blocks without explicit blocks', async () => {
+			const content = `# Content
 
 Keep this.
 
@@ -129,15 +129,15 @@ And this too.
 
 Keep this also.`;
 
-      const filePath = createTestFile('ignore-blocks.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('ignore-blocks.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.hasExplicitBlocks).toBe(false);
-      expect(result.tree.children.length).toBe(3); // heading + 2 paragraphs kept
-    });
+			expect(result.hasExplicitBlocks).toBe(false);
+			expect(result.tree.children.length).toBe(3); // heading + 2 paragraphs kept
+		});
 
-    it('should handle multiple start/end pairs', async () => {
-      const content = `# Doc
+		it('should handle multiple start/end pairs', async () => {
+			const content = `# Doc
 
 Filtered content.
 
@@ -155,46 +155,46 @@ Second section content.
 
 Final filtered content.`;
 
-      const filePath = createTestFile('multiple-blocks.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('multiple-blocks.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.hasExplicitBlocks).toBe(true);
-      expect(result.tree.children.length).toBe(4); // 2 headings + 2 paragraphs
-    });
-  });
+			expect(result.hasExplicitBlocks).toBe(true);
+			expect(result.tree.children.length).toBe(4); // 2 headings + 2 paragraphs
+		});
+	});
 
-  describe('edge cases', () => {
-    it('should handle empty file', async () => {
-      const content = '';
-      const filePath = createTestFile('empty.md', content);
-      const result = await markdownToAst(content, filePath);
+	describe('edge cases', () => {
+		it('should handle empty file', async () => {
+			const content = '';
+			const filePath = createTestFile('empty.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.tree.type).toBe('root');
-      expect(result.tree.children).toHaveLength(0);
-      expect(result.hasExplicitBlocks).toBe(false);
-    });
+			expect(result.tree.type).toBe('root');
+			expect(result.tree.children).toHaveLength(0);
+			expect(result.hasExplicitBlocks).toBe(false);
+		});
 
-    it('should handle file with only whitespace', async () => {
-      const content = '   \n\n   \n';
-      const filePath = createTestFile('whitespace.md', content);
-      const result = await markdownToAst(content, filePath);
+		it('should handle file with only whitespace', async () => {
+			const content = '   \n\n   \n';
+			const filePath = createTestFile('whitespace.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.tree.type).toBe('root');
-      expect(result.hasExplicitBlocks).toBe(false);
-    });
+			expect(result.tree.type).toBe('root');
+			expect(result.hasExplicitBlocks).toBe(false);
+		});
 
-    it('should handle file with only markers', async () => {
-      const content = `<!--awesome-pages:start-->
+		it('should handle file with only markers', async () => {
+			const content = `<!--awesome-pages:start-->
 <!--awesome-pages:end-->`;
-      const filePath = createTestFile('only-markers.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('only-markers.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.hasExplicitBlocks).toBe(true);
-      expect(result.tree.children).toHaveLength(0);
-    });
+			expect(result.hasExplicitBlocks).toBe(true);
+			expect(result.tree.children).toHaveLength(0);
+		});
 
-    it('should handle complex nested structures', async () => {
-      const content = `# Main Title
+		it('should handle complex nested structures', async () => {
+			const content = `# Main Title
 
 ## Section 1
 
@@ -215,69 +215,69 @@ const code = "block";
 
 <!--awesome-pages:end-->`;
 
-      const filePath = createTestFile('complex.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('complex.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.hasExplicitBlocks).toBe(true);
-      expect(result.tree.children.length).toBeGreaterThan(0);
-    });
-  });
+			expect(result.hasExplicitBlocks).toBe(true);
+			expect(result.tree.children.length).toBeGreaterThan(0);
+		});
+	});
 
-  describe('error handling', () => {
-    it('should throw error for non-existent file', async () => {
-      const content = 'This is some content';
+	describe('error handling', () => {
+		it('should throw error for non-existent file', async () => {
+			const content = 'This is some content';
 
-      await expect(markdownToAst(content)).resolves.toBeDefined();
-    });
-  });
+			await expect(markdownToAst(content)).resolves.toBeDefined();
+		});
+	});
 
-  describe('GFM features', () => {
-    it('should parse strikethrough', async () => {
-      const content = 'This is ~~deleted~~ text.';
-      const filePath = createTestFile('strikethrough.md', content);
-      const result = await markdownToAst(content, filePath);
+	describe('GFM features', () => {
+		it('should parse strikethrough', async () => {
+			const content = 'This is ~~deleted~~ text.';
+			const filePath = createTestFile('strikethrough.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.tree.children.length).toBeGreaterThan(0);
-    });
+			expect(result.tree.children.length).toBeGreaterThan(0);
+		});
 
-    it('should parse task lists', async () => {
-      const content = `- [x] Completed task
+		it('should parse task lists', async () => {
+			const content = `- [x] Completed task
 - [ ] Incomplete task`;
-      const filePath = createTestFile('tasks.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('tasks.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      const list = result.tree.children.find((node) => node.type === 'list');
-      expect(list).toBeDefined();
-    });
+			const list = result.tree.children.find((node) => node.type === 'list');
+			expect(list).toBeDefined();
+		});
 
-    it('should parse autolinks', async () => {
-      const content = 'Visit https://example.com for more info.';
-      const filePath = createTestFile('autolink.md', content);
-      const result = await markdownToAst(content, filePath);
+		it('should parse autolinks', async () => {
+			const content = 'Visit https://example.com for more info.';
+			const filePath = createTestFile('autolink.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.tree.children.length).toBeGreaterThan(0);
-    });
-  });
+			expect(result.tree.children.length).toBeGreaterThan(0);
+		});
+	});
 
-  describe('metadata extraction (title and description)', () => {
-    it('should extract title from H1', async () => {
-      const content = `# My Awesome List
+	describe('metadata extraction (title and description)', () => {
+		it('should extract title from H1', async () => {
+			const content = `# My Awesome List
 
 Some description here.
 
 ## Section 1
 - Item 1
 `;
-      const filePath = createTestFile('test-title.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('test-title.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.title).toBe('My Awesome List');
-      expect(result.description).toBe('Some description here.');
-      expect(result.frontmatter).toBeNull();
-    });
+			expect(result.title).toBe('My Awesome List');
+			expect(result.description).toBe('Some description here.');
+			expect(result.frontmatter).toBeNull();
+		});
 
-    it('should extract title and description from frontmatter', async () => {
-      const content = `---
+		it('should extract title and description from frontmatter', async () => {
+			const content = `---
 title: Frontmatter Title
 description: Frontmatter description
 ---
@@ -289,57 +289,57 @@ This paragraph should also be ignored.
 ## Section 1
 - Item 1
 `;
-      const filePath = createTestFile('test-frontmatter.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('test-frontmatter.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.title).toBe('Frontmatter Title');
-      expect(result.description).toBe('Frontmatter description');
-      expect(result.frontmatter).toEqual({
-        title: 'Frontmatter Title',
-        description: 'Frontmatter description',
-      });
-    });
+			expect(result.title).toBe('Frontmatter Title');
+			expect(result.description).toBe('Frontmatter description');
+			expect(result.frontmatter).toEqual({
+				title: 'Frontmatter Title',
+				description: 'Frontmatter description',
+			});
+		});
 
-    it('should use filename as fallback if no H1 exists', async () => {
-      const content = `## Section 1
+		it('should use filename as fallback if no H1 exists', async () => {
+			const content = `## Section 1
 - Item 1
 `;
-      const filePath = createTestFile('fallback-title.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('fallback-title.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.title).toBe('fallback-title.md');
-      expect(result.description).toBeNull();
-    });
+			expect(result.title).toBe('fallback-title.md');
+			expect(result.description).toBeNull();
+		});
 
-    it('should handle H1 with HTML and images', async () => {
-      const content = `# <img src="logo.png" width="100"/> My Title [![Badge](badge.svg)](link)
+		it('should handle H1 with HTML and images', async () => {
+			const content = `# <img src="logo.png" width="100"/> My Title [![Badge](badge.svg)](link)
 
 Description paragraph.
 
 ## Section 1
 `;
-      const filePath = createTestFile('test-html-title.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('test-html-title.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.title).toBe('My Title');
-      expect(result.description).toBe('Description paragraph.');
-    });
+			expect(result.title).toBe('My Title');
+			expect(result.description).toBe('Description paragraph.');
+		});
 
-    it('should return null description if no paragraph after H1', async () => {
-      const content = `# Title Only
+		it('should return null description if no paragraph after H1', async () => {
+			const content = `# Title Only
 
 ## Section 1
 - Item 1
 `;
-      const filePath = createTestFile('test-no-desc.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('test-no-desc.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.title).toBe('Title Only');
-      expect(result.description).toBeNull();
-    });
+			expect(result.title).toBe('Title Only');
+			expect(result.description).toBeNull();
+		});
 
-    it('should ignore awesome-pages markers for title/description extraction', async () => {
-      const content = `# My Title
+		it('should ignore awesome-pages markers for title/description extraction', async () => {
+			const content = `# My Title
 
 This is the description.
 
@@ -348,16 +348,16 @@ This is the description.
 - Item 1
 <!--awesome-pages:end-->
 `;
-      const filePath = createTestFile('test-markers.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('test-markers.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.title).toBe('My Title');
-      expect(result.description).toBe('This is the description.');
-      expect(result.hasExplicitBlocks).toBe(true);
-    });
+			expect(result.title).toBe('My Title');
+			expect(result.description).toBe('This is the description.');
+			expect(result.hasExplicitBlocks).toBe(true);
+		});
 
-    it('should handle frontmatter with only title', async () => {
-      const content = `---
+		it('should handle frontmatter with only title', async () => {
+			const content = `---
 title: Only Title
 ---
 
@@ -365,15 +365,15 @@ This should be the description.
 
 ## Section 1
 `;
-      const filePath = createTestFile('test-fm-title.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('test-fm-title.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.title).toBe('Only Title');
-      expect(result.description).toBe('This should be the description.');
-    });
+			expect(result.title).toBe('Only Title');
+			expect(result.description).toBe('This should be the description.');
+		});
 
-    it('should handle frontmatter with only description', async () => {
-      const content = `---
+		it('should handle frontmatter with only description', async () => {
+			const content = `---
 description: Frontmatter description
 ---
 
@@ -381,209 +381,209 @@ description: Frontmatter description
 
 ## Section 1
 `;
-      const filePath = createTestFile('test-fm-desc.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('test-fm-desc.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.title).toBe('H1 Title');
-      expect(result.description).toBe('Frontmatter description');
-    });
+			expect(result.title).toBe('H1 Title');
+			expect(result.description).toBe('Frontmatter description');
+		});
 
-    it('should stop looking for description at first H2', async () => {
-      const content = `# Title
+		it('should stop looking for description at first H2', async () => {
+			const content = `# Title
 
 ## Section 1
 
 This paragraph comes after H2, so it should not be the description.
 `;
-      const filePath = createTestFile('test-stop-h2.md', content);
-      const result = await markdownToAst(content, filePath);
+			const filePath = createTestFile('test-stop-h2.md', content);
+			const result = await markdownToAst(content, filePath);
 
-      expect(result.title).toBe('Title');
-      expect(result.description).toBeNull();
-    });
-  });
+			expect(result.title).toBe('Title');
+			expect(result.description).toBeNull();
+		});
+	});
 
-  describe('metadata extraction from fixtures', () => {
-    it('should extract title only when no description paragraph exists', async () => {
-      const content = await fsPromises.readFile(
-        'src/tests/fixtures/readmes/only-h1.md',
-        'utf8'
-      );
-      const result = await markdownToAst(
-        content,
-        'src/tests/fixtures/readmes/only-h1.md'
-      );
+	describe('metadata extraction from fixtures', () => {
+		it('should extract title only when no description paragraph exists', async () => {
+			const content = await fsPromises.readFile(
+				'src/tests/fixtures/readmes/only-h1.md',
+				'utf8',
+			);
+			const result = await markdownToAst(
+				content,
+				'src/tests/fixtures/readmes/only-h1.md',
+			);
 
-      expect(result.title).toBe('My Awesome Title');
-      expect(result.description).toBeNull();
-      expect(result.frontmatter).toBeNull();
-    });
+			expect(result.title).toBe('My Awesome Title');
+			expect(result.description).toBeNull();
+			expect(result.frontmatter).toBeNull();
+		});
 
-    it('should extract both title and description from H1 and first paragraph', async () => {
-      const content = await fsPromises.readFile(
-        'src/tests/fixtures/readmes/h1-with-description.md',
-        'utf8'
-      );
-      const result = await markdownToAst(
-        content,
-        'src/tests/fixtures/readmes/h1-with-description.md'
-      );
+		it('should extract both title and description from H1 and first paragraph', async () => {
+			const content = await fsPromises.readFile(
+				'src/tests/fixtures/readmes/h1-with-description.md',
+				'utf8',
+			);
+			const result = await markdownToAst(
+				content,
+				'src/tests/fixtures/readmes/h1-with-description.md',
+			);
 
-      expect(result.title).toBe('Awesome Tools Collection');
-      expect(result.description).toBe(
-        'This is a curated list of amazing tools that developers love to use.'
-      );
-      expect(result.frontmatter).toBeNull();
-    });
+			expect(result.title).toBe('Awesome Tools Collection');
+			expect(result.description).toBe(
+				'This is a curated list of amazing tools that developers love to use.',
+			);
+			expect(result.frontmatter).toBeNull();
+		});
 
-    it('should use filename when no H1 exists', async () => {
-      const content = await fsPromises.readFile(
-        'src/tests/fixtures/readmes/no-h1.md',
-        'utf8'
-      );
-      const result = await markdownToAst(
-        content,
-        'src/tests/fixtures/readmes/no-h1.md'
-      );
+		it('should use filename when no H1 exists', async () => {
+			const content = await fsPromises.readFile(
+				'src/tests/fixtures/readmes/no-h1.md',
+				'utf8',
+			);
+			const result = await markdownToAst(
+				content,
+				'src/tests/fixtures/readmes/no-h1.md',
+			);
 
-      expect(result.title).toBe('no-h1.md');
-      expect(result.description).toBeNull();
-      expect(result.frontmatter).toBeNull();
-    });
+			expect(result.title).toBe('no-h1.md');
+			expect(result.description).toBeNull();
+			expect(result.frontmatter).toBeNull();
+		});
 
-    it('should extract title but no description when H1 has no following paragraph', async () => {
-      const content = await fsPromises.readFile(
-        'src/tests/fixtures/readmes/h1-no-paragraph.md',
-        'utf8'
-      );
-      const result = await markdownToAst(
-        content,
-        'src/tests/fixtures/readmes/h1-no-paragraph.md'
-      );
+		it('should extract title but no description when H1 has no following paragraph', async () => {
+			const content = await fsPromises.readFile(
+				'src/tests/fixtures/readmes/h1-no-paragraph.md',
+				'utf8',
+			);
+			const result = await markdownToAst(
+				content,
+				'src/tests/fixtures/readmes/h1-no-paragraph.md',
+			);
 
-      expect(result.title).toBe('Title Without Description');
-      expect(result.description).toBeNull();
-      expect(result.frontmatter).toBeNull();
-    });
+			expect(result.title).toBe('Title Without Description');
+			expect(result.description).toBeNull();
+			expect(result.frontmatter).toBeNull();
+		});
 
-    it('should use frontmatter title and extract description from paragraph', async () => {
-      const content = await fsPromises.readFile(
-        'src/tests/fixtures/readmes/frontmatter-partial.md',
-        'utf8'
-      );
-      const result = await markdownToAst(
-        content,
-        'src/tests/fixtures/readmes/frontmatter-partial.md'
-      );
+		it('should use frontmatter title and extract description from paragraph', async () => {
+			const content = await fsPromises.readFile(
+				'src/tests/fixtures/readmes/frontmatter-partial.md',
+				'utf8',
+			);
+			const result = await markdownToAst(
+				content,
+				'src/tests/fixtures/readmes/frontmatter-partial.md',
+			);
 
-      expect(result.title).toBe('Title from Frontmatter Only');
-      expect(result.description).toBe(
-        "This paragraph should be the description since frontmatter doesn't have description field."
-      );
-      expect(result.frontmatter).toEqual({
-        title: 'Title from Frontmatter Only',
-      });
-    });
+			expect(result.title).toBe('Title from Frontmatter Only');
+			expect(result.description).toBe(
+				"This paragraph should be the description since frontmatter doesn't have description field.",
+			);
+			expect(result.frontmatter).toEqual({
+				title: 'Title from Frontmatter Only',
+			});
+		});
 
-    it('should use frontmatter description and H1 title', async () => {
-      const content = await fsPromises.readFile(
-        'src/tests/fixtures/readmes/frontmatter-description-only.md',
-        'utf8'
-      );
-      const result = await markdownToAst(
-        content,
-        'src/tests/fixtures/readmes/frontmatter-description-only.md'
-      );
+		it('should use frontmatter description and H1 title', async () => {
+			const content = await fsPromises.readFile(
+				'src/tests/fixtures/readmes/frontmatter-description-only.md',
+				'utf8',
+			);
+			const result = await markdownToAst(
+				content,
+				'src/tests/fixtures/readmes/frontmatter-description-only.md',
+			);
 
-      expect(result.title).toBe('Title from H1');
-      expect(result.description).toBe('Description from frontmatter only');
-      expect(result.frontmatter).toEqual({
-        description: 'Description from frontmatter only',
-      });
-    });
+			expect(result.title).toBe('Title from H1');
+			expect(result.description).toBe('Description from frontmatter only');
+			expect(result.frontmatter).toEqual({
+				description: 'Description from frontmatter only',
+			});
+		});
 
-    it('should clean HTML and images from H1 title', async () => {
-      const content = await fsPromises.readFile(
-        'src/tests/fixtures/readmes/h1-with-html.md',
-        'utf8'
-      );
-      const result = await markdownToAst(
-        content,
-        'src/tests/fixtures/readmes/h1-with-html.md'
-      );
+		it('should clean HTML and images from H1 title', async () => {
+			const content = await fsPromises.readFile(
+				'src/tests/fixtures/readmes/h1-with-html.md',
+				'utf8',
+			);
+			const result = await markdownToAst(
+				content,
+				'src/tests/fixtures/readmes/h1-with-html.md',
+			);
 
-      expect(result.title).toBe('Awesome List');
-      expect(result.description).toBe(
-        'A description with bold and italic text.'
-      );
-    });
+			expect(result.title).toBe('Awesome List');
+			expect(result.description).toBe(
+				'A description with bold and italic text.',
+			);
+		});
 
-    it('should extract only first paragraph as description', async () => {
-      const content = await fsPromises.readFile(
-        'src/tests/fixtures/readmes/multiple-paragraphs.md',
-        'utf8'
-      );
-      const result = await markdownToAst(
-        content,
-        'src/tests/fixtures/readmes/multiple-paragraphs.md'
-      );
+		it('should extract only first paragraph as description', async () => {
+			const content = await fsPromises.readFile(
+				'src/tests/fixtures/readmes/multiple-paragraphs.md',
+				'utf8',
+			);
+			const result = await markdownToAst(
+				content,
+				'src/tests/fixtures/readmes/multiple-paragraphs.md',
+			);
 
-      expect(result.title).toBe('Title');
-      expect(result.description).toBe(
-        'First paragraph should be the description.'
-      );
-    });
+			expect(result.title).toBe('Title');
+			expect(result.description).toBe(
+				'First paragraph should be the description.',
+			);
+		});
 
-    it('should extract title and description from outside markers', async () => {
-      const content = await fsPromises.readFile(
-        'src/tests/fixtures/readmes/with-markers-outside.md',
-        'utf8'
-      );
-      const result = await markdownToAst(
-        content,
-        'src/tests/fixtures/readmes/with-markers-outside.md'
-      );
+		it('should extract title and description from outside markers', async () => {
+			const content = await fsPromises.readFile(
+				'src/tests/fixtures/readmes/with-markers-outside.md',
+				'utf8',
+			);
+			const result = await markdownToAst(
+				content,
+				'src/tests/fixtures/readmes/with-markers-outside.md',
+			);
 
-      expect(result.title).toBe('Title Outside Markers');
-      expect(result.description).toBe('Description outside markers.');
-      expect(result.hasExplicitBlocks).toBe(true);
-    });
+			expect(result.title).toBe('Title Outside Markers');
+			expect(result.description).toBe('Description outside markers.');
+			expect(result.hasExplicitBlocks).toBe(true);
+		});
 
-    it('should use existing with-frontmatter.md fixture correctly', async () => {
-      const content = await fsPromises.readFile(
-        'src/tests/fixtures/readmes/with-frontmatter.md',
-        'utf8'
-      );
-      const result = await markdownToAst(
-        content,
-        'src/tests/fixtures/readmes/with-frontmatter.md'
-      );
+		it('should use existing with-frontmatter.md fixture correctly', async () => {
+			const content = await fsPromises.readFile(
+				'src/tests/fixtures/readmes/with-frontmatter.md',
+				'utf8',
+			);
+			const result = await markdownToAst(
+				content,
+				'src/tests/fixtures/readmes/with-frontmatter.md',
+			);
 
-      expect(result.title).toBe('My Awesome List with Frontmatter');
-      expect(result.description).toBe(
-        'This description comes from frontmatter metadata'
-      );
-      expect(result.frontmatter).toEqual({
-        title: 'My Awesome List with Frontmatter',
-        description: 'This description comes from frontmatter metadata',
-      });
-    });
+			expect(result.title).toBe('My Awesome List with Frontmatter');
+			expect(result.description).toBe(
+				'This description comes from frontmatter metadata',
+			);
+			expect(result.frontmatter).toEqual({
+				title: 'My Awesome List with Frontmatter',
+				description: 'This description comes from frontmatter metadata',
+			});
+		});
 
-    it('should use existing awesome-click-and-use.md fixture correctly', async () => {
-      const content = await fsPromises.readFile(
-        'src/tests/fixtures/readmes/awesome-click-and-use.md',
-        'utf8'
-      );
-      const result = await markdownToAst(
-        content,
-        'src/tests/fixtures/readmes/awesome-click-and-use.md'
-      );
+		it('should use existing awesome-click-and-use.md fixture correctly', async () => {
+			const content = await fsPromises.readFile(
+				'src/tests/fixtures/readmes/awesome-click-and-use.md',
+				'utf8',
+			);
+			const result = await markdownToAst(
+				content,
+				'src/tests/fixtures/readmes/awesome-click-and-use.md',
+			);
 
-      expect(result.title).toBe('Awesome Click and Use');
-      expect(result.description).toBe(
-        'Useful and awesome online tools that I often use. No download, no signup required.'
-      );
-      expect(result.frontmatter).toBeNull();
-    });
-  });
+			expect(result.title).toBe('Awesome Click and Use');
+			expect(result.description).toBe(
+				'Useful and awesome online tools that I often use. No download, no signup required.',
+			);
+			expect(result.frontmatter).toBeNull();
+		});
+	});
 });

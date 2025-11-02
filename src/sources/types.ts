@@ -1,4 +1,4 @@
 export interface MarkdownSource {
-  read(): Promise<string>;
-  id(): string;
+	read(): Promise<string>;
+	id(): string;
 }

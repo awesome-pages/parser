@@ -1,6 +1,6 @@
 export type FetchLike = (
-  input: string,
-  init?: RequestInit
+	input: string,
+	init?: RequestInit,
 ) => Promise<Response>;
 
 /**
@@ -10,14 +10,14 @@ export type FetchLike = (
  * - Browser (global fetch)
  */
 export async function resolveFetch(): Promise<FetchLike> {
-  // Browser or Node >= 18
-  const g = globalThis as unknown as { fetch?: FetchLike };
-  if (typeof g.fetch === 'function') {
-    return g.fetch;
-  }
+	// Browser or Node >= 18
+	const g = globalThis as unknown as { fetch?: FetchLike };
+	if (typeof g.fetch === 'function') {
+		return g.fetch;
+	}
 
-  // Node < 18 fallback
-  const mod = await import('node-fetch');
-  const fetchImpl = (mod.default ?? mod) as unknown as FetchLike;
-  return fetchImpl;
+	// Node < 18 fallback
+	const mod = await import('node-fetch');
+	const fetchImpl = (mod.default ?? mod) as unknown as FetchLike;
+	return fetchImpl;
 }

@@ -1,181 +1,173 @@
 import path from 'node:path';
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
-import remarkGfm from 'remark-gfm';
+import type { Heading, Paragraph, Root, RootContent, Yaml } from 'mdast';
 import remarkFrontmatter from 'remark-frontmatter';
-import type { Root, Heading, Paragraph, Yaml, RootContent } from 'mdast';
-import remarkAwesomePagesMarkers from '@/plugins/awesomePagesMarkers.js';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import { unified } from 'unified';
 import { VFile } from 'vfile';
+import remarkAwesomePagesMarkers from '@/plugins/awesomePagesMarkers.js';
 
 interface AwesomePagesData {
-  awesomePages?: {
-    hasExplicitBlocks?: boolean;
-  };
+	awesomePages?: {
+		hasExplicitBlocks?: boolean;
+	};
 }
 
 export interface ParsedAst {
-  tree: Root;
-  title: string | null;
-  description: string | null;
-  frontmatter: Record<string, unknown> | null;
-  hasExplicitBlocks: boolean;
+	tree: Root;
+	title: string | null;
+	description: string | null;
+	frontmatter: Record<string, unknown> | null;
+	hasExplicitBlocks: boolean;
 }
 
 function extractText(node: RootContent): string {
-  if (node.type === 'html') {
-    return '';
-  }
+	if (node.type === 'html') {
+		return '';
+	}
 
-  if (node.type === 'image') {
-    return '';
-  }
+	if (node.type === 'image') {
+		return '';
+	}
 
-  if (
-    'value' in node &&
-    typeof (node as { value?: unknown }).value === 'string'
-  ) {
-    return (node as { value: string }).value;
-  }
+	if (
+		'value' in node &&
+		typeof (node as { value?: unknown }).value === 'string'
+	) {
+		return (node as { value: string }).value;
+	}
 
-  if (
-    'children' in node &&
-    Array.isArray((node as { children?: unknown }).children)
-  ) {
-    return (node as { children: RootContent[] }).children
-      .map((child) => extractText(child))
-      .filter((text) => text.length > 0)
-      .join('');
-  }
+	if (
+		'children' in node &&
+		Array.isArray((node as { children?: unknown }).children)
+	) {
+		return (node as { children: RootContent[] }).children
+			.map((child) => extractText(child))
+			.filter((text) => text.length > 0)
+			.join('');
+	}
 
-  return '';
+	return '';
 }
 
 function parseFrontmatter(yamlContent: string): Record<string, unknown> | null {
-  try {
-    const lines = yamlContent.split('\n');
-    const result: Record<string, unknown> = {};
+	try {
+		const lines = yamlContent.split('\n');
+		const result: Record<string, unknown> = {};
 
-    for (const line of lines) {
-      const match = line.match(/^(\w+):\s*(.+)$/);
-      if (match) {
-        const [, key, value] = match;
-        result[key] = value.replace(/^["']|["']$/g, '').trim();
-      }
-    }
+		for (const line of lines) {
+			const match = line.match(/^(\w+):\s*(.+)$/);
+			if (match) {
+				const [, key, value] = match;
+				result[key] = value.replace(/^["']|["']$/g, '').trim();
+			}
+		}
 
-    return Object.keys(result).length > 0 ? result : null;
-  } catch {
-    return null;
-  }
+		return Object.keys(result).length > 0 ? result : null;
+	} catch {
+		return null;
+	}
 }
 
 function extractMetadata(
-  tree: Root,
-  sourceId?: string
+	tree: Root,
+	sourceId?: string,
 ): {
-  title: string | null;
-  description: string | null;
-  frontmatter: Record<string, unknown> | null;
+	title: string | null;
+	description: string | null;
+	frontmatter: Record<string, unknown> | null;
 } {
-  let frontmatter: Record<string, unknown> | null = null;
-  let title: string | null = null;
-  let description: string | null = null;
-  let foundH1 = false;
-  let foundFirstParagraph = false;
+	let frontmatter: Record<string, unknown> | null = null;
+	let title: string | null = null;
+	let description: string | null = null;
+	let foundH1 = false;
+	let foundFirstParagraph = false;
 
-  for (const node of tree.children) {
-    if (node.type === 'yaml') {
-      const yamlNode = node as Yaml;
-      frontmatter = parseFrontmatter(yamlNode.value);
-      break;
-    }
-  }
+	for (const node of tree.children) {
+		if (node.type === 'yaml') {
+			const yamlNode = node as Yaml;
+			frontmatter = parseFrontmatter(yamlNode.value);
+			break;
+		}
+	}
 
-  if (
-    frontmatter &&
-    frontmatter.title &&
-    typeof frontmatter.title === 'string'
-  ) {
-    title = frontmatter.title;
-  }
+	if (frontmatter?.title && typeof frontmatter.title === 'string') {
+		title = frontmatter.title;
+	}
 
-  if (
-    frontmatter &&
-    frontmatter.description &&
-    typeof frontmatter.description === 'string'
-  ) {
-    description = frontmatter.description;
-  }
+	if (frontmatter?.description && typeof frontmatter.description === 'string') {
+		description = frontmatter.description;
+	}
 
-  for (const node of tree.children) {
-    if (node.type === 'yaml' || node.type === 'html') {
-      continue;
-    }
+	for (const node of tree.children) {
+		if (node.type === 'yaml' || node.type === 'html') {
+			continue;
+		}
 
-    if (!title && node.type === 'heading') {
-      const heading = node as Heading;
-      if (heading.depth === 1) {
-        title = extractText(heading as RootContent).trim();
-        foundH1 = true;
-      }
-    }
+		if (!title && node.type === 'heading') {
+			const heading = node as Heading;
+			if (heading.depth === 1) {
+				title = extractText(heading as RootContent).trim();
+				foundH1 = true;
+			}
+		}
 
-    if (
-      !description &&
-      (foundH1 || frontmatter?.title) &&
-      node.type === 'paragraph'
-    ) {
-      if (!foundFirstParagraph) {
-        const para = node as Paragraph;
-        description = extractText(para as RootContent).trim();
-        foundFirstParagraph = true;
-        break;
-      }
-    }
+		if (
+			!description &&
+			(foundH1 || frontmatter?.title) &&
+			node.type === 'paragraph'
+		) {
+			if (!foundFirstParagraph) {
+				const para = node as Paragraph;
+				description = extractText(para as RootContent).trim();
+				foundFirstParagraph = true;
+				break;
+			}
+		}
 
-    if (foundH1 && node.type === 'heading') {
-      const heading = node as Heading;
-      if (heading.depth >= 2) {
-        break;
-      }
-    }
-  }
+		if (foundH1 && node.type === 'heading') {
+			const heading = node as Heading;
+			if (heading.depth >= 2) {
+				break;
+			}
+		}
+	}
 
-  if (!title && sourceId) {
-    title = path.basename(sourceId);
-  }
+	if (!title && sourceId) {
+		title = path.basename(sourceId);
+	}
 
-  return { title, description, frontmatter };
+	return { title, description, frontmatter };
 }
 
 export async function markdownToAst(
-  markdown: string,
-  sourceId?: string
+	markdown: string,
+	sourceId?: string,
 ): Promise<ParsedAst> {
-  const processor = unified()
-    .use(remarkParse)
-    .use(remarkGfm)
-    .use(remarkFrontmatter, ['yaml'])
-    .use(remarkAwesomePagesMarkers);
+	const processor = unified()
+		.use(remarkParse)
+		.use(remarkGfm)
+		.use(remarkFrontmatter, ['yaml'])
+		.use(remarkAwesomePagesMarkers);
 
-  const fullTree = processor.parse(markdown) as Root;
+	const fullTree = processor.parse(markdown) as Root;
 
-  const { title, description, frontmatter } = extractMetadata(
-    fullTree,
-    sourceId
-  );
+	const { title, description, frontmatter } = extractMetadata(
+		fullTree,
+		sourceId,
+	);
 
-  const vfile = new VFile({ value: markdown, path: sourceId });
-  const transformedTree = await processor.run(fullTree, vfile);
+	const vfile = new VFile({ value: markdown, path: sourceId });
+	const transformedTree = await processor.run(fullTree, vfile);
 
-  const data = vfile.data as AwesomePagesData;
-  const hasExplicitBlocks = data?.awesomePages?.hasExplicitBlocks === true;
+	const data = vfile.data as AwesomePagesData;
+	const hasExplicitBlocks = data?.awesomePages?.hasExplicitBlocks === true;
 
-  return {
-    tree: transformedTree,
-    title,
-    description,
-    frontmatter,
-    hasExplicitBlocks,
-  };
+	return {
+		tree: transformedTree,
+		title,
+		description,
+		frontmatter,
+		hasExplicitBlocks,
+	};
 }
