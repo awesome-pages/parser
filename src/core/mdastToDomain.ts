@@ -16,7 +16,7 @@ import {
 	ItemV1Schema,
 	type SectionV1,
 	SectionV1Schema,
-} from '@/schemas/domain.v1.js';
+} from '@/schemas/v1/domain.v1.js';
 
 interface Options {
 	title?: string | null;
