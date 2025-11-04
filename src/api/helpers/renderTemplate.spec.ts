@@ -64,7 +64,9 @@ describe('renderTemplate', () => {
 	});
 
 	it('handles placeholders with underscores', () => {
-		const result = renderTemplate('File: {file_name}', { file_name: 'test.txt' });
+		const result = renderTemplate('File: {file_name}', {
+			file_name: 'test.txt',
+		});
 		expect(result).toBe('File: test.txt');
 	});
 
@@ -74,7 +76,9 @@ describe('renderTemplate', () => {
 	});
 
 	it('handles placeholders with colons', () => {
-		const result = renderTemplate('Namespace: {ns:value}', { 'ns:value': 'test' });
+		const result = renderTemplate('Namespace: {ns:value}', {
+			'ns:value': 'test',
+		});
 		expect(result).toBe('Namespace: test');
 	});
 
@@ -143,7 +147,7 @@ describe('renderTemplate', () => {
 				dir: 'docs',
 				name: 'readme',
 				ext: 'json',
-			}
+			},
 		);
 		expect(result).toBe('output/awesome-pages_parser_main/docs/readme.json');
 	});

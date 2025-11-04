@@ -3,9 +3,9 @@ import { z } from 'zod';
 import {
 	ArtifactSchema,
 	OutputTargetSchema,
-	SourceSpecSchema,
 	ParseOptionsSchema,
 	parseAndNormalizeOptions,
+	SourceSpecSchema,
 } from './schema';
 
 describe('ArtifactSchema', () => {
@@ -62,7 +62,7 @@ describe('OutputTargetSchema', () => {
 			OutputTargetSchema.parse({
 				artifact: 'domain',
 				to: '',
-			})
+			}),
 		).toThrow(z.ZodError);
 	});
 
@@ -71,7 +71,7 @@ describe('OutputTargetSchema', () => {
 			OutputTargetSchema.parse({
 				artifact: [],
 				to: 'output.json',
-			})
+			}),
 		).toThrow(z.ZodError);
 	});
 
@@ -79,7 +79,7 @@ describe('OutputTargetSchema', () => {
 		expect(() =>
 			OutputTargetSchema.parse({
 				artifact: 'domain',
-			})
+			}),
 		).toThrow(z.ZodError);
 	});
 
@@ -87,7 +87,7 @@ describe('OutputTargetSchema', () => {
 		expect(() =>
 			OutputTargetSchema.parse({
 				to: 'output.json',
-			})
+			}),
 		).toThrow(z.ZodError);
 	});
 });
@@ -201,7 +201,7 @@ describe('SourceSpecSchema', () => {
 						to: 'output.json',
 					},
 				],
-			})
+			}),
 		).toThrow(z.ZodError);
 	});
 
@@ -215,7 +215,7 @@ describe('SourceSpecSchema', () => {
 						to: 'output.json',
 					},
 				],
-			})
+			}),
 		).toThrow(z.ZodError);
 	});
 
@@ -224,7 +224,7 @@ describe('SourceSpecSchema', () => {
 			SourceSpecSchema.parse({
 				from: 'README.md',
 				outputs: [],
-			})
+			}),
 		).toThrow(z.ZodError);
 	});
 
@@ -237,7 +237,7 @@ describe('SourceSpecSchema', () => {
 						to: 'output.json',
 					},
 				],
-			})
+			}),
 		).toThrow(z.ZodError);
 	});
 
@@ -245,7 +245,7 @@ describe('SourceSpecSchema', () => {
 		expect(() =>
 			SourceSpecSchema.parse({
 				from: 'README.md',
-			})
+			}),
 		).toThrow(z.ZodError);
 	});
 });
@@ -363,7 +363,7 @@ describe('ParseOptionsSchema', () => {
 						outputs: [{ artifact: 'domain', to: 'output.json' }],
 					},
 				],
-			})
+			}),
 		).toThrow(z.ZodError);
 	});
 
@@ -377,7 +377,7 @@ describe('ParseOptionsSchema', () => {
 						outputs: [{ artifact: 'domain', to: 'output.json' }],
 					},
 				],
-			})
+			}),
 		).toThrow(z.ZodError);
 	});
 
@@ -391,7 +391,7 @@ describe('ParseOptionsSchema', () => {
 						outputs: [{ artifact: 'domain', to: 'output.json' }],
 					},
 				],
-			})
+			}),
 		).toThrow(z.ZodError);
 	});
 
@@ -405,7 +405,7 @@ describe('ParseOptionsSchema', () => {
 						outputs: [{ artifact: 'domain', to: 'output.json' }],
 					},
 				],
-			})
+			}),
 		).toThrow(z.ZodError);
 	});
 
@@ -419,7 +419,7 @@ describe('ParseOptionsSchema', () => {
 						outputs: [{ artifact: 'domain', to: 'output.json' }],
 					},
 				],
-			})
+			}),
 		).toThrow(z.ZodError);
 	});
 
@@ -433,7 +433,7 @@ describe('ParseOptionsSchema', () => {
 						outputs: [{ artifact: 'domain', to: 'output.json' }],
 					},
 				],
-			})
+			}),
 		).toThrow(z.ZodError);
 	});
 
@@ -441,7 +441,7 @@ describe('ParseOptionsSchema', () => {
 		expect(() =>
 			ParseOptionsSchema.parse({
 				sources: [],
-			})
+			}),
 		).toThrow(z.ZodError);
 	});
 
@@ -688,7 +688,10 @@ describe('parseAndNormalizeOptions', () => {
 
 		expect(result.sources[0].outputs).toHaveLength(2);
 		expect(result.sources[0].outputs[0].artifact).toEqual(['domain']);
-		expect(result.sources[0].outputs[1].artifact).toEqual(['index', 'bookmarks']);
+		expect(result.sources[0].outputs[1].artifact).toEqual([
+			'index',
+			'bookmarks',
+		]);
 	});
 
 	it('handles complex nested structure', () => {

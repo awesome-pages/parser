@@ -21,23 +21,24 @@ describe('buildPlaceholderContext', () => {
 			});
 		});
 
-	it('parses github source with nested path', () => {
-		const result = buildPlaceholderContext({
-			input: '',
-			sourceId: 'github:user/repo@develop:src/api/file.json',
-			rootDir: '/any',
-		});
+		it('parses github source with nested path', () => {
+			const result = buildPlaceholderContext({
+				input: '',
+				sourceId: 'github:user/repo@develop:src/api/file.json',
+				rootDir: '/any',
+			});
 
-		expect(result).toEqual({
-			dir: 'src-api',
-			name: 'file',
-			ext: 'json',
-			owner: 'user',
-			repo: 'repo',
-			ref: 'develop',
-			path: 'src/api/file.json',
+			expect(result).toEqual({
+				dir: 'src-api',
+				name: 'file',
+				ext: 'json',
+				owner: 'user',
+				repo: 'repo',
+				ref: 'develop',
+				path: 'src/api/file.json',
+			});
 		});
-	});		it('parses github source with root file', () => {
+		it('parses github source with root file', () => {
 			const result = buildPlaceholderContext({
 				input: '',
 				sourceId: 'github:owner/repository@master:README.md',
@@ -55,17 +56,18 @@ describe('buildPlaceholderContext', () => {
 			});
 		});
 
-	it('slugifies github owner, repo and ref with special characters', () => {
-		const result = buildPlaceholderContext({
-			input: '',
-			sourceId: 'github:My-Owner_123/My_Repo@feature/new-branch:docs/file.md',
-			rootDir: '/any',
-		});
+		it('slugifies github owner, repo and ref with special characters', () => {
+			const result = buildPlaceholderContext({
+				input: '',
+				sourceId: 'github:My-Owner_123/My_Repo@feature/new-branch:docs/file.md',
+				rootDir: '/any',
+			});
 
-		expect(result.owner).toBe('my-owner-123');
-		expect(result.repo).toBe('my-repo');
-		expect(result.ref).toBe('feature-new-branch');
-	});		it('handles invalid github format with fallback', () => {
+			expect(result.owner).toBe('my-owner-123');
+			expect(result.repo).toBe('my-repo');
+			expect(result.ref).toBe('feature-new-branch');
+		});
+		it('handles invalid github format with fallback', () => {
 			const result = buildPlaceholderContext({
 				input: '',
 				sourceId: 'github:invalid-format',
@@ -113,19 +115,20 @@ describe('buildPlaceholderContext', () => {
 			});
 		});
 
-	it('parses http source with nested path', () => {
-		const result = buildPlaceholderContext({
-			input: '',
-			sourceId: 'http:https://api.example.com/v1/data/file.json',
-			rootDir: '/any',
-		});
+		it('parses http source with nested path', () => {
+			const result = buildPlaceholderContext({
+				input: '',
+				sourceId: 'http:https://api.example.com/v1/data/file.json',
+				rootDir: '/any',
+			});
 
-		expect(result).toEqual({
-			dir: 'v1-data',
-			name: 'file',
-			ext: 'json',
+			expect(result).toEqual({
+				dir: 'v1-data',
+				name: 'file',
+				ext: 'json',
+			});
 		});
-	});		it('parses http source with root file', () => {
+		it('parses http source with root file', () => {
 			const result = buildPlaceholderContext({
 				input: '',
 				sourceId: 'http:https://example.com/readme.txt',
@@ -182,14 +185,14 @@ describe('buildPlaceholderContext', () => {
 		});
 
 		it('slugifies directory and filename from URL', () => {
-		const result = buildPlaceholderContext({
-			input: '',
-			sourceId: 'http:https://example.com/My_Docs/Some%20File.md',
-			rootDir: '/any',
-		});
+			const result = buildPlaceholderContext({
+				input: '',
+				sourceId: 'http:https://example.com/My_Docs/Some%20File.md',
+				rootDir: '/any',
+			});
 
-		expect(result.dir).toBe('my-docs');
-		expect(result.name).toBe('some-20file');
+			expect(result.dir).toBe('my-docs');
+			expect(result.name).toBe('some-20file');
 		});
 	});
 
@@ -222,19 +225,20 @@ describe('buildPlaceholderContext', () => {
 			});
 		});
 
-	it('parses nested local file', () => {
-		const result = buildPlaceholderContext({
-			input: 'src/api/helpers/module.js',
-			sourceId: 'local',
-			rootDir: '/project',
-		});
+		it('parses nested local file', () => {
+			const result = buildPlaceholderContext({
+				input: 'src/api/helpers/module.js',
+				sourceId: 'local',
+				rootDir: '/project',
+			});
 
-		expect(result).toEqual({
-			dir: 'src-api-helpers',
-			name: 'module',
-			ext: 'js',
+			expect(result).toEqual({
+				dir: 'src-api-helpers',
+				name: 'module',
+				ext: 'js',
+			});
 		});
-	});		it('parses root level local file', () => {
+		it('parses root level local file', () => {
 			const result = buildPlaceholderContext({
 				input: 'README.md',
 				sourceId: 'local',

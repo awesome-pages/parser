@@ -1,6 +1,6 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { parse } from './index';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ParseOptions } from './index';
+import { parse } from './index';
 
 // Mock the dependencies before importing
 vi.mock('./schema', () => ({
@@ -30,7 +30,11 @@ describe('parse', () => {
 			],
 		};
 
-		const mockNormalized: any = { concurrency: 8, sources: [], rootDir: '/test' };
+		const mockNormalized: any = {
+			concurrency: 8,
+			sources: [],
+			rootDir: '/test',
+		};
 		const mockResults: any[] = [];
 
 		vi.mocked(schema.parseAndNormalizeOptions).mockReturnValue(mockNormalized);
@@ -52,7 +56,11 @@ describe('parse', () => {
 			],
 		};
 
-		const mockNormalized: any = { concurrency: 8, sources: [], rootDir: '/test' };
+		const mockNormalized: any = {
+			concurrency: 8,
+			sources: [],
+			rootDir: '/test',
+		};
 		const mockResults: any[] = [
 			{ file: 'output.json', artifact: 'domain', sourceId: 'test', bytes: 100 },
 		];
@@ -87,12 +95,16 @@ describe('parse', () => {
 			],
 		};
 
-		const mockNormalized: any = { concurrency: 8, sources: [], rootDir: '/test' };
+		const mockNormalized: any = {
+			concurrency: 8,
+			sources: [],
+			rootDir: '/test',
+		};
 
 		vi.mocked(schema.parseAndNormalizeOptions).mockReturnValue(mockNormalized);
 		vi.mocked(parseRunner.runParse).mockRejectedValue(
-new Error('Parse failed')
-);
+			new Error('Parse failed'),
+		);
 
 		await expect(parse(mockOptions)).rejects.toThrow('Parse failed');
 	});
