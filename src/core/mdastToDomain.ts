@@ -26,6 +26,7 @@ interface Options {
 	description?: string | null;
 	descriptionHtml?: string | null;
 	frontmatter?: Record<string, unknown> | null;
+	language?: string;
 	generatedAt?: string;
 	source: string;
 	strict?: boolean;
@@ -179,6 +180,7 @@ export function mdastToDomain(tree: Root, opts: Options) {
 			descriptionHtml: opts.descriptionHtml ?? undefined,
 			generatedAt: opts.generatedAt ?? new Date().toISOString(),
 			source: opts.source,
+			language: opts.language ?? undefined,
 			frontmatter: opts.frontmatter ?? undefined,
 		},
 		sections,

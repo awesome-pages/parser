@@ -14,13 +14,14 @@ const input = 'src/tests/fixtures/readmes/awesome-click-and-use.md';
 (async () => {
 	const source = createSource(input);
 	const markdown = await source.read();
-	const { tree, title, description, descriptionHtml, frontmatter } =
+	const { tree, title, description, descriptionHtml, frontmatter, language } =
 		await markdownToAst(markdown, source.id());
 	const domain = mdastToDomain(tree, {
 		title,
 		description,
 		descriptionHtml,
 		frontmatter,
+		language,
 		source: source.id(),
 	});
 	const schemaUrl = process.env.AWESOME_LIST_SCHEMA;

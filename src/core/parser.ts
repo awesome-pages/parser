@@ -9,6 +9,10 @@ import { toHast } from 'mdast-util-to-hast';
 import { toHtml } from 'hast-util-to-html';
 import remarkAwesomePagesMarkers from '@/plugins/awesomePagesMarkers.js';
 import { escapeHtml } from '@/core/helpers/escapeHtml';
+import {
+	detectLanguage,
+	normalizeBcp47,
+} from '@/core/helpers/detectLanguage.js';
 
 interface AwesomePagesData {
 	awesomePages?: {
@@ -22,6 +26,7 @@ export interface ParsedAst {
 	description: string | null;
 	descriptionHtml: string | null;
 	frontmatter: Record<string, unknown> | null;
+	language: string;
 	hasExplicitBlocks: boolean;
 }
 
@@ -81,11 +86,13 @@ function extractMetadata(
 	description: string | null;
 	descriptionHtml: string | null;
 	frontmatter: Record<string, unknown> | null;
+	language: string | null;
 } {
 	let frontmatter: Record<string, unknown> | null = null;
 	let title: string | null = null;
 	let description: string | null = null;
 	let descriptionHtml: string | null = null;
+	let language: string | null = null;
 	let foundH1 = false;
 	let foundFirstParagraph = false;
 
@@ -99,6 +106,10 @@ function extractMetadata(
 
 	if (frontmatter?.title && typeof frontmatter.title === 'string') {
 		title = frontmatter.title;
+	}
+
+	if (frontmatter?.language && typeof frontmatter.language === 'string') {
+		language = normalizeBcp47(frontmatter.language);
 	}
 
 	if (frontmatter?.description && typeof frontmatter.description === 'string') {
@@ -171,7 +182,7 @@ function extractMetadata(
 		title = path.basename(sourceId);
 	}
 
-	return { title, description, descriptionHtml, frontmatter };
+	return { title, description, descriptionHtml, frontmatter, language };
 }
 
 export async function markdownToAst(
@@ -186,10 +197,20 @@ export async function markdownToAst(
 
 	const fullTree = processor.parse(markdown) as Root;
 
-	const { title, description, descriptionHtml, frontmatter } = extractMetadata(
-		fullTree,
-		sourceId,
-	);
+	const {
+		title,
+		description,
+		descriptionHtml,
+		frontmatter,
+		language: frontmatterLanguage,
+	} = extractMetadata(fullTree, sourceId);
+
+	// Detect language if not specified in frontmatter
+	const language =
+		frontmatterLanguage ||
+		detectLanguage(
+			[title, description].filter((text): text is string => text !== null).join(' ') || markdown,
+		);
 
 	const vfile = new VFile({ value: markdown, path: sourceId });
 	const transformedTree = await processor.run(fullTree, vfile);
@@ -203,6 +224,7 @@ export async function markdownToAst(
 		description,
 		descriptionHtml,
 		frontmatter,
+		language,
 		hasExplicitBlocks,
 	};
 }
