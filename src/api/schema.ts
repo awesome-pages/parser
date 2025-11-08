@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { Artifact } from './index';
 
-export const ArtifactSchema = z.enum(['domain', 'index', 'bookmarks']);
+export const ArtifactSchema = z.enum(['domain', 'index', 'bookmarks', 'sitemap', 'rss-json', 'rss-xml']);
 export type ArtifactZ = z.infer<typeof ArtifactSchema>;
 
 export const OutputTargetSchema = z.object({
