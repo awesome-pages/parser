@@ -1,4 +1,5 @@
 import type { DomainV1 } from '@/schemas/v1/domain.v1';
+import { getStopwords } from './stopwords.js';
 
 export interface SearchIndex {
 	schemaVersion: 1;
@@ -35,61 +36,37 @@ export interface SearchIndex {
 	>;
 }
 
-const STOPWORDS = new Set([
-	'a',
-	'an',
-	'and',
-	'are',
-	'as',
-	'at',
-	'be',
-	'by',
-	'for',
-	'from',
-	'has',
-	'he',
-	'in',
-	'is',
-	'it',
-	'its',
-	'of',
-	'on',
-	'that',
-	'the',
-	'to',
-	'was',
-	'will',
-	'with',
-	'or',
-]);
-
 /**
  * Tokenize and normalize text for indexing.
  * - Converts to lowercase
  * - Removes punctuation
  * - Splits on whitespace
- * - Removes stopwords
+ * - Removes stopwords based on language
  * - Normalizes version suffixes (e.g., "v2" -> "v")
  */
-export function tokenize(text: string): string[] {
+export function tokenize(text: string, stopwords: Set<string>): string[] {
 	if (!text) return [];
 
-	// Lowercase and replace punctuation with spaces
+	// Lowercase and replace punctuation with spaces, but keep dots temporarily for version detection
 	const normalized = text
 		.toLowerCase()
-		.replace(/[.,!?:;()\[\]{}'"]/g, ' ')
-		// Keep hyphens in words, but treat other punctuation as separators
+		.replace(/[,!?:;()\[\]{}'"]/g, ' ')
+		// Keep hyphens and dots temporarily
 		.replace(/[-_/]/g, ' ');
 
 	// Split on whitespace and filter
 	const tokens = normalized
 		.split(/\s+/)
 		.filter((token) => token.length > 0)
-		.filter((token) => !STOPWORDS.has(token))
 		.map((token) => {
 			// Normalize version suffixes: v2, v3.1 -> v
+			// Must happen before removing dots
 			return token.replace(/^v\d+(\.\d+)*$/, 'v');
-		});
+		})
+		// Now remove remaining dots and filter out empty strings
+		.map((token) => token.replace(/\./g, ''))
+		.filter((token) => token.length > 0)
+		.filter((token) => !stopwords.has(token));
 
 	return tokens;
 }
@@ -131,6 +108,10 @@ export function buildIndex(domain: DomainV1): SearchIndex {
 		Map<string, { title: number; description: number; tags: number }>
 	>();
 
+	// Get stopwords based on domain language
+	const language = domain.meta.language || 'en';
+	const stopwords = getStopwords(language);
+
 	// Process each item in the domain
 	for (const item of domain.items) {
 		// Build docs map
@@ -141,7 +122,7 @@ export function buildIndex(domain: DomainV1): SearchIndex {
 		};
 
 		// Tokenize title (weight: 2)
-		const titleTokens = tokenize(item.title);
+		const titleTokens = tokenize(item.title, stopwords);
 		for (const token of titleTokens) {
 			if (!termFrequencies.has(token)) {
 				termFrequencies.set(token, new Map());
@@ -155,7 +136,7 @@ export function buildIndex(domain: DomainV1): SearchIndex {
 
 		// Tokenize description (weight: 1)
 		if (item.description) {
-			const descTokens = tokenize(item.description);
+			const descTokens = tokenize(item.description, stopwords);
 			for (const token of descTokens) {
 				if (!termFrequencies.has(token)) {
 					termFrequencies.set(token, new Map());
@@ -171,7 +152,7 @@ export function buildIndex(domain: DomainV1): SearchIndex {
 		// Tokenize tags (weight: 1.5)
 		if (item.tags && item.tags.length > 0) {
 			for (const tag of item.tags) {
-				const tagTokens = tokenize(tag);
+				const tagTokens = tokenize(tag, stopwords);
 				for (const token of tagTokens) {
 					if (!termFrequencies.has(token)) {
 						termFrequencies.set(token, new Map());
