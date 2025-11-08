@@ -45,14 +45,13 @@ export async function runParse(
 				const markdown = await source.read();
 				const sourceId = source.id();
 
-				const { tree, title, description, frontmatter } = await markdownToAst(
-					markdown,
-					sourceId,
-				);
+				const { tree, title, description, descriptionHtml, frontmatter } =
+					await markdownToAst(markdown, sourceId);
 
 				const domain: DomainV1 = mdastToDomain(tree, {
 					title,
 					description,
+					descriptionHtml,
 					frontmatter,
 					generatedAt: new Date().toISOString(),
 					source: sourceId,

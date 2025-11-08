@@ -14,13 +14,12 @@ const input = 'src/tests/fixtures/readmes/awesome-click-and-use.md';
 (async () => {
 	const source = createSource(input);
 	const markdown = await source.read();
-	const { tree, title, description, frontmatter } = await markdownToAst(
-		markdown,
-		source.id(),
-	);
+	const { tree, title, description, descriptionHtml, frontmatter } =
+		await markdownToAst(markdown, source.id());
 	const domain = mdastToDomain(tree, {
 		title,
 		description,
+		descriptionHtml,
 		frontmatter,
 		source: source.id(),
 	});
