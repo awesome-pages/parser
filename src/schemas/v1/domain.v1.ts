@@ -57,6 +57,7 @@ export const DomainV1Schema = z
 		meta: z.object({
 			title: z.string().optional(),
 			description: z.string().optional(),
+			descriptionHtml: z.string().optional(),
 			generatedAt: z.string().datetime(),
 			source: z.string().min(1),
 			frontmatter: z.record(z.any()).optional(),
