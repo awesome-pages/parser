@@ -19,6 +19,18 @@ await parse({
 					artifact: ['bookmarks'],
 					to: 'dist/{repo}-{name}.{artifact}.html',
 				},
+				{
+					artifact: ['sitemap'],
+					to: 'dist/{repo}-{name}.{artifact}.xml',
+				},
+				{
+					artifact: ['rss-json'],
+					to: 'dist/{repo}-{name}.rss.json',
+				},
+				{
+					artifact: ['rss-xml'],
+					to: 'dist/{repo}-{name}.rss.xml',
+				},
 			],
 		},
 		{
