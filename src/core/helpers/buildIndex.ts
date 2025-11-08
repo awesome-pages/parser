@@ -1,0 +1,194 @@
+import type { DomainV1 } from '@/schemas/v1/domain.v1';
+
+export interface SearchIndex {
+	schemaVersion: 1;
+	meta: {
+		source: string;
+		generatedAt: string;
+		fieldWeights: {
+			title: number;
+			description: number;
+			tags: number;
+		};
+	};
+	docs: Record<
+		string,
+		{
+			title: string;
+			url?: string;
+			sectionId: string;
+		}
+	>;
+	terms: Record<
+		string,
+		Array<{
+			id: string;
+			f: number;
+		}>
+	>;
+}
+
+const STOPWORDS = new Set([
+	'a',
+	'an',
+	'and',
+	'are',
+	'as',
+	'at',
+	'be',
+	'by',
+	'for',
+	'from',
+	'has',
+	'he',
+	'in',
+	'is',
+	'it',
+	'its',
+	'of',
+	'on',
+	'that',
+	'the',
+	'to',
+	'was',
+	'will',
+	'with',
+	'or',
+]);
+
+/**
+ * Tokenize and normalize text for indexing.
+ * - Converts to lowercase
+ * - Removes punctuation
+ * - Splits on whitespace
+ * - Removes stopwords
+ * - Normalizes version suffixes (e.g., "v2" -> "v")
+ */
+export function tokenize(text: string): string[] {
+	if (!text) return [];
+
+	// Lowercase and replace punctuation with spaces
+	const normalized = text
+		.toLowerCase()
+		.replace(/[.,!?:;()\[\]{}'"]/g, ' ')
+		// Keep hyphens in words, but treat other punctuation as separators
+		.replace(/[-_/]/g, ' ');
+
+	// Split on whitespace and filter
+	const tokens = normalized
+		.split(/\s+/)
+		.filter((token) => token.length > 0)
+		.filter((token) => !STOPWORDS.has(token))
+		.map((token) => {
+			// Normalize version suffixes: v2, v3.1 -> v
+			return token.replace(/^v\d+(\.\d+)*$/, 'v');
+		});
+
+	return tokens;
+}
+
+/**
+ * Build an inverted index from a DomainV1 object.
+ * Creates a searchable index with:
+ * - docs: minimal metadata per item
+ * - terms: postings list mapping terms to document IDs with frequencies
+ */
+export function buildIndex(domain: DomainV1): SearchIndex {
+	const docs: SearchIndex['docs'] = {};
+	const termFrequencies = new Map<
+		string,
+		Map<string, { title: number; description: number; tags: number }>
+	>();
+
+	// Process each item in the domain
+	for (const item of domain.items) {
+		// Build docs map
+		docs[item.id] = {
+			title: item.title,
+			url: item.url,
+			sectionId: item.sectionId,
+		};
+
+		// Tokenize title (weight: 2)
+		const titleTokens = tokenize(item.title);
+		for (const token of titleTokens) {
+			if (!termFrequencies.has(token)) {
+				termFrequencies.set(token, new Map());
+			}
+			const docFreqs = termFrequencies.get(token)!;
+			if (!docFreqs.has(item.id)) {
+				docFreqs.set(item.id, { title: 0, description: 0, tags: 0 });
+			}
+			docFreqs.get(item.id)!.title += 1;
+		}
+
+		// Tokenize description (weight: 1)
+		if (item.description) {
+			const descTokens = tokenize(item.description);
+			for (const token of descTokens) {
+				if (!termFrequencies.has(token)) {
+					termFrequencies.set(token, new Map());
+				}
+				const docFreqs = termFrequencies.get(token)!;
+				if (!docFreqs.has(item.id)) {
+					docFreqs.set(item.id, { title: 0, description: 0, tags: 0 });
+				}
+				docFreqs.get(item.id)!.description += 1;
+			}
+		}
+
+		// Tokenize tags (weight: 1.5)
+		if (item.tags && item.tags.length > 0) {
+			for (const tag of item.tags) {
+				const tagTokens = tokenize(tag);
+				for (const token of tagTokens) {
+					if (!termFrequencies.has(token)) {
+						termFrequencies.set(token, new Map());
+					}
+					const docFreqs = termFrequencies.get(token)!;
+					if (!docFreqs.has(item.id)) {
+						docFreqs.set(item.id, { title: 0, description: 0, tags: 0 });
+					}
+					docFreqs.get(item.id)!.tags += 1;
+				}
+			}
+		}
+	}
+
+	// Build the terms postings list with weighted frequencies
+	const terms: SearchIndex['terms'] = {};
+	const fieldWeights = { title: 2, description: 1, tags: 1.5 };
+
+	for (const [term, docFreqs] of termFrequencies.entries()) {
+		const postings: Array<{ id: string; f: number }> = [];
+
+		for (const [docId, freqs] of docFreqs.entries()) {
+			// Calculate weighted frequency
+			const weightedFreq =
+				freqs.title * fieldWeights.title +
+				freqs.description * fieldWeights.description +
+				freqs.tags * fieldWeights.tags;
+
+			postings.push({
+				id: docId,
+				f: weightedFreq,
+			});
+		}
+
+		// Sort by frequency (descending) for better performance
+		postings.sort((a, b) => b.f - a.f);
+
+		terms[term] = postings;
+	}
+
+	return {
+		schemaVersion: 1,
+		meta: {
+			source: domain.meta.source,
+			generatedAt: domain.meta.generatedAt,
+			fieldWeights,
+		},
+		docs,
+		terms,
+	};
+}
