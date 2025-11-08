@@ -42,7 +42,7 @@ describe('generateRssXml', () => {
 
 		const xml = generateRssXml(domain);
 
-		expect(xml).toContain('<lastBuildDate>Fri, 08 Nov 2025 12:00:00 GMT</lastBuildDate>');
+		expect(xml).toContain('<lastBuildDate>Sat, 08 Nov 2025 12:00:00 GMT</lastBuildDate>');
 	});
 
 	it('should generate items with all required fields', () => {
@@ -85,7 +85,7 @@ describe('generateRssXml', () => {
 		expect(xml).toContain('<link>https://github.com</link>');
 		expect(xml).toContain('<guid isPermaLink="false">github</guid>');
 		expect(xml).toContain('<description>Code hosting platform</description>');
-		expect(xml).toContain('<pubDate>Fri, 08 Nov 2025 12:00:00 GMT</pubDate>');
+		expect(xml).toContain('<pubDate>Sat, 08 Nov 2025 12:00:00 GMT</pubDate>');
 		expect(xml).toContain('</item>');
 	});
 
