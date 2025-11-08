@@ -80,13 +80,20 @@ describe('buildIndex integration', () => {
 
 		// Verify schema and meta
 		expect(index.schemaVersion).toBe(1);
-		expect(index.meta.source).toBe('github:owner/repo@main:README.md');
+		expect(index.meta.repo).toBe('owner/repo');
+		expect(index.meta.ref).toBe('main');
+		expect(index.meta.path).toBe('README.md');
 		expect(index.meta.generatedAt).toBe('2025-11-08T00:00:00.000Z');
 		expect(index.meta.fieldWeights).toEqual({
 			title: 2,
 			description: 1,
 			tags: 1.5,
 		});
+
+		// Verify stats
+		expect(index.stats).toBeDefined();
+		expect(index.stats?.docs).toBe(4);
+		expect(index.stats?.terms).toBeGreaterThan(0);
 
 		// Verify docs map
 		expect(Object.keys(index.docs)).toHaveLength(4);
@@ -253,16 +260,28 @@ describe('buildIndex integration', () => {
 		// Verify it matches the spec structure
 		expect(json).toHaveProperty('schemaVersion');
 		expect(json).toHaveProperty('meta');
+		expect(json).toHaveProperty('stats');
 		expect(json).toHaveProperty('docs');
 		expect(json).toHaveProperty('terms');
 
-		expect(json.meta).toHaveProperty('source');
+		// Meta can have either source OR (repo + ref + path)
+		const hasParsedSource =
+			json.meta.repo && json.meta.ref && json.meta.path;
+		const hasRawSource = json.meta.source;
+		expect(!!(hasParsedSource || hasRawSource)).toBe(true);
+
 		expect(json.meta).toHaveProperty('generatedAt');
 		expect(json.meta).toHaveProperty('fieldWeights');
 
 		expect(json.meta.fieldWeights).toHaveProperty('title');
 		expect(json.meta.fieldWeights).toHaveProperty('description');
 		expect(json.meta.fieldWeights).toHaveProperty('tags');
+
+		// Verify stats structure
+		expect(json.stats).toHaveProperty('docs');
+		expect(json.stats).toHaveProperty('terms');
+		expect(typeof json.stats.docs).toBe('number');
+		expect(typeof json.stats.terms).toBe('number');
 
 		// Verify docs structure
 		for (const [id, doc] of Object.entries(json.docs)) {

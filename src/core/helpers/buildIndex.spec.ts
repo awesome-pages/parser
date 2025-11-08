@@ -94,6 +94,10 @@ describe('buildIndex', () => {
 			description: 1,
 			tags: 1.5,
 		});
+		expect(index.stats).toEqual({
+			docs: 0,
+			terms: 0,
+		});
 		expect(index.docs).toEqual({});
 		expect(index.terms).toEqual({});
 	});
@@ -380,7 +384,9 @@ describe('buildIndex', () => {
 
 		const index = buildIndex(domain);
 
-		expect(index.meta.source).toBe('github:owner/repo@main:README.md');
+		expect(index.meta.repo).toBe('owner/repo');
+		expect(index.meta.ref).toBe('main');
+		expect(index.meta.path).toBe('README.md');
 		expect(index.meta.generatedAt).toBe('2025-11-08T12:34:56.789Z');
 	});
 
@@ -440,5 +446,93 @@ describe('buildIndex', () => {
 
 		// 'optimizer' should appear in both documents
 		expect(index.terms.optimizer).toHaveLength(2);
+	});
+
+	it('should parse GitHub source format into structured meta fields', () => {
+		const domain: DomainV1 = {
+			schemaVersion: 1,
+			meta: {
+				generatedAt: '2025-11-08T00:00:00.000Z',
+				source: 'github:teles/awesome-click-and-use@main:README.md',
+			},
+			sections: [],
+			items: [],
+		};
+
+		const index = buildIndex(domain);
+
+		expect(index.meta.repo).toBe('teles/awesome-click-and-use');
+		expect(index.meta.ref).toBe('main');
+		expect(index.meta.path).toBe('README.md');
+		expect(index.meta.source).toBeUndefined();
+	});
+
+	it('should keep source field for non-GitHub formats', () => {
+		const domain: DomainV1 = {
+			schemaVersion: 1,
+			meta: {
+				generatedAt: '2025-11-08T00:00:00.000Z',
+				source: 'local:path/to/file.md',
+			},
+			sections: [],
+			items: [],
+		};
+
+		const index = buildIndex(domain);
+
+		expect(index.meta.source).toBe('local:path/to/file.md');
+		expect(index.meta.repo).toBeUndefined();
+		expect(index.meta.ref).toBeUndefined();
+		expect(index.meta.path).toBeUndefined();
+	});
+
+	it('should include stats with document and term counts', () => {
+		const domain: DomainV1 = {
+			schemaVersion: 1,
+			meta: {
+				generatedAt: '2025-11-08T00:00:00.000Z',
+				source: 'test',
+			},
+			sections: [
+				{
+					id: 'tools',
+					title: 'Tools',
+					parentId: null,
+					depth: 1,
+					order: 0,
+					path: 'tools',
+					descriptionHtml: null,
+				},
+			],
+			items: [
+				{
+					id: 'tool-one',
+					sectionId: 'tools',
+					title: 'Tool One',
+					url: 'https://example.com',
+					description: 'First tool',
+					descriptionHtml: null,
+					order: 0,
+					tags: ['test'],
+				},
+				{
+					id: 'tool-two',
+					sectionId: 'tools',
+					title: 'Tool Two',
+					url: 'https://example.com',
+					description: 'Second tool',
+					descriptionHtml: null,
+					order: 1,
+					tags: ['test'],
+				},
+			],
+		};
+
+		const index = buildIndex(domain);
+
+		expect(index.stats).toBeDefined();
+		expect(index.stats?.docs).toBe(2);
+		expect(index.stats?.terms).toBeGreaterThan(0);
+		// Should have terms like: 'tool', 'one', 'two', 'first', 'second', 'test'
 	});
 });
