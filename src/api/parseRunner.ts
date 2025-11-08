@@ -6,6 +6,7 @@ import { generateBookmarksHtml } from '@/api/helpers/generateBookmarksHtml';
 import { renderTemplate } from '@/api/helpers/renderTemplate';
 import { mdastToDomain } from '@/core/mdastToDomain';
 import { markdownToAst } from '@/core/parser';
+import { buildIndex } from '@/core/helpers/buildIndex';
 import type { DomainV1 } from '@/schemas/v1/domain.v1';
 import { createSource } from '@/sources/createSource';
 import type { Artifact, ParseResultFile } from './index';
@@ -104,12 +105,7 @@ async function emitArtifact(
 		case 'domain':
 			return JSON.stringify(domain, null, 2);
 		case 'index':
-			// TODO: implement a real index builder
-			return JSON.stringify(
-				{ schemaVersion: 1, docs: [] as unknown[] },
-				null,
-				2,
-			);
+			return JSON.stringify(buildIndex(domain), null, 2);
 		case 'bookmarks':
 			return generateBookmarksHtml(domain);
 	}
