@@ -3,10 +3,13 @@ import type {
 	Link,
 	List,
 	Paragraph,
+	PhrasingContent,
 	Root,
 	RootContent,
 	Text,
 } from 'mdast';
+import { toHast } from 'mdast-util-to-hast';
+import { toHtml } from 'hast-util-to-html';
 import { visit } from 'unist-util-visit';
 import { computeDeterministicItemId } from '@/core/helpers/computeDeterministicItemId.js';
 import extractInlineTags from '@/core/helpers/extractInlineTags';
@@ -21,6 +24,7 @@ import {
 interface Options {
 	title?: string | null;
 	description?: string | null;
+	descriptionHtml?: string | null;
 	frontmatter?: Record<string, unknown> | null;
 	generatedAt?: string;
 	source: string;
@@ -105,6 +109,13 @@ export function mdastToDomain(tree: Root, opts: Options) {
 					: extractText(para as RootContent);
 				const url = link?.url;
 
+				// Build a paragraph with description only (excluding the link)
+				const descChildren: PhrasingContent[] = [];
+				for (const ch of para.children) {
+					if (ch === link) continue;
+					descChildren.push(ch);
+				}
+
 				const descParts: string[] = [];
 				for (const ch of para.children) {
 					if (ch === link) continue;
@@ -118,6 +129,32 @@ export function mdastToDomain(tree: Root, opts: Options) {
 					: { clean: '', tags: [] };
 				const description = clean || null;
 
+				// Generate descriptionHtml from the description paragraph
+				let descriptionHtml: string | null = null;
+				if (descChildren.length > 0) {
+					// Normalize the first text node to remove leading separators
+					const normalizedChildren: PhrasingContent[] = descChildren.map(
+						(child, idx) => {
+							if (idx === 0 && child.type === 'text') {
+								const textNode = child as Text;
+								const cleaned = textNode.value.replace(/^[\s-–—:]+/, '');
+								return { ...textNode, value: cleaned };
+							}
+							return child;
+						},
+					);
+
+					// Create a paragraph node with description content
+					const descParagraph: Paragraph = {
+						type: 'paragraph',
+						children: normalizedChildren,
+					};
+					const hast = toHast(descParagraph);
+					if (hast) {
+						descriptionHtml = toHtml(hast);
+					}
+				}
+
 				const id = computeDeterministicItemId(currentSectionId, title);
 				const item = ItemV1Schema.parse({
 					id,
@@ -125,6 +162,7 @@ export function mdastToDomain(tree: Root, opts: Options) {
 					title,
 					url,
 					description,
+					descriptionHtml,
 					order: itemOrder++,
 					tags,
 				});
@@ -138,6 +176,7 @@ export function mdastToDomain(tree: Root, opts: Options) {
 		meta: {
 			title: opts.title ?? undefined,
 			description: opts.description ?? undefined,
+			descriptionHtml: opts.descriptionHtml ?? undefined,
 			generatedAt: opts.generatedAt ?? new Date().toISOString(),
 			source: opts.source,
 			frontmatter: opts.frontmatter ?? undefined,

@@ -5,7 +5,10 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { VFile } from 'vfile';
+import { toHast } from 'mdast-util-to-hast';
+import { toHtml } from 'hast-util-to-html';
 import remarkAwesomePagesMarkers from '@/plugins/awesomePagesMarkers.js';
+import { escapeHtml } from '@/core/helpers/escapeHtml';
 
 interface AwesomePagesData {
 	awesomePages?: {
@@ -17,6 +20,7 @@ export interface ParsedAst {
 	tree: Root;
 	title: string | null;
 	description: string | null;
+	descriptionHtml: string | null;
 	frontmatter: Record<string, unknown> | null;
 	hasExplicitBlocks: boolean;
 }
@@ -75,11 +79,13 @@ function extractMetadata(
 ): {
 	title: string | null;
 	description: string | null;
+	descriptionHtml: string | null;
 	frontmatter: Record<string, unknown> | null;
 } {
 	let frontmatter: Record<string, unknown> | null = null;
 	let title: string | null = null;
 	let description: string | null = null;
+	let descriptionHtml: string | null = null;
 	let foundH1 = false;
 	let foundFirstParagraph = false;
 
@@ -97,6 +103,23 @@ function extractMetadata(
 
 	if (frontmatter?.description && typeof frontmatter.description === 'string') {
 		description = frontmatter.description;
+
+		// Generate HTML for descriptionHtml based on frontmatter description
+		const para: Paragraph = {
+			type: 'paragraph',
+			children: [
+				{
+					type: 'text',
+					value: description,
+				},
+			],
+		};
+		const hast = toHast(para, { allowDangerousHtml: false });
+		if (hast) {
+			descriptionHtml = toHtml(hast);
+		} else {
+			descriptionHtml = `<p>${escapeHtml(description)}</p>`;
+		}
 	}
 
 	for (const node of tree.children) {
@@ -119,7 +142,18 @@ function extractMetadata(
 		) {
 			if (!foundFirstParagraph) {
 				const para = node as Paragraph;
-				description = extractText(para as RootContent).trim();
+				const text = extractText(para as RootContent).trim();
+				if (text.length > 0) {
+					description = text;
+
+					// Generate safe HTML fragment for descriptionHtml
+					const hast = toHast(para, { allowDangerousHtml: false });
+					if (hast) {
+						descriptionHtml = toHtml(hast);
+					} else {
+						descriptionHtml = `<p>${description}</p>`;
+					}
+				}
 				foundFirstParagraph = true;
 				break;
 			}
@@ -137,7 +171,7 @@ function extractMetadata(
 		title = path.basename(sourceId);
 	}
 
-	return { title, description, frontmatter };
+	return { title, description, descriptionHtml, frontmatter };
 }
 
 export async function markdownToAst(
@@ -152,7 +186,7 @@ export async function markdownToAst(
 
 	const fullTree = processor.parse(markdown) as Root;
 
-	const { title, description, frontmatter } = extractMetadata(
+	const { title, description, descriptionHtml, frontmatter } = extractMetadata(
 		fullTree,
 		sourceId,
 	);
@@ -167,6 +201,7 @@ export async function markdownToAst(
 		tree: transformedTree,
 		title,
 		description,
+		descriptionHtml,
 		frontmatter,
 		hasExplicitBlocks,
 	};
