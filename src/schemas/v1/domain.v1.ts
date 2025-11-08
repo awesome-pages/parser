@@ -60,6 +60,7 @@ export const DomainV1Schema = z
 			descriptionHtml: z.string().optional(),
 			generatedAt: z.string().datetime(),
 			source: z.string().min(1),
+			language: z.string().optional(),
 			frontmatter: z.record(z.any()).optional(),
 		}),
 		sections: z.array(SectionV1Schema),
