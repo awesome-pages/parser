@@ -3,13 +3,20 @@ import type { DomainV1 } from '@/schemas/v1/domain.v1';
 export interface SearchIndex {
 	schemaVersion: 1;
 	meta: {
-		source: string;
+		source?: string;
+		repo?: string;
+		ref?: string;
+		path?: string;
 		generatedAt: string;
 		fieldWeights: {
 			title: number;
 			description: number;
 			tags: number;
 		};
+	};
+	stats?: {
+		docs: number;
+		terms: number;
 	};
 	docs: Record<
 		string,
@@ -85,6 +92,30 @@ export function tokenize(text: string): string[] {
 		});
 
 	return tokens;
+}
+
+/**
+ * Parse source string into structured parts.
+ * Formats: "github:owner/repo@ref:path" or "local:path" or any other string
+ */
+function parseSource(source: string): {
+	source?: string;
+	repo?: string;
+	ref?: string;
+	path?: string;
+} {
+	// Match github format: github:owner/repo@ref:path
+	const githubMatch = source.match(/^github:([^@]+)@([^:]+):(.+)$/);
+	if (githubMatch) {
+		return {
+			repo: githubMatch[1],
+			ref: githubMatch[2],
+			path: githubMatch[3],
+		};
+	}
+
+	// For other formats, keep the original source
+	return { source };
 }
 
 /**
@@ -184,9 +215,13 @@ export function buildIndex(domain: DomainV1): SearchIndex {
 	return {
 		schemaVersion: 1,
 		meta: {
-			source: domain.meta.source,
+			...parseSource(domain.meta.source),
 			generatedAt: domain.meta.generatedAt,
 			fieldWeights,
+		},
+		stats: {
+			docs: Object.keys(docs).length,
+			terms: Object.keys(terms).length,
 		},
 		docs,
 		terms,
