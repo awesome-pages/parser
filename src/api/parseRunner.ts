@@ -2,7 +2,10 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import fg from 'fast-glob';
 import { buildPlaceholderContext } from '@/api/helpers/placeholderContext';
-import { generateBookmarksHtml } from '@/api/helpers/generateBookmarksHtml';
+import { generateBookmarksHtml } from '@/api/artifacts/generateBookmarksHtml';
+import { generateSitemap } from '@/api/artifacts/generateSitemap';
+import { generateJsonFeed } from '@/api/artifacts/generateJsonFeed';
+import { generateRssXml } from '@/api/artifacts/generateRssXml';
 import { renderTemplate } from '@/api/helpers/renderTemplate';
 import { mdastToDomain } from '@/core/mdastToDomain';
 import { markdownToAst } from '@/core/parser';
@@ -108,5 +111,11 @@ async function emitArtifact(
 			return JSON.stringify(buildIndex(domain), null, 2);
 		case 'bookmarks':
 			return generateBookmarksHtml(domain);
+		case 'sitemap':
+			return generateSitemap(domain);
+		case 'rss-json':
+			return generateJsonFeed(domain);
+		case 'rss-xml':
+			return generateRssXml(domain);
 	}
 }
