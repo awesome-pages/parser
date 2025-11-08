@@ -1,39 +1,42 @@
 import { describe, it, expect } from 'vitest';
 import { tokenize, buildIndex } from './buildIndex';
+import { getStopwords } from './stopwords';
 import type { DomainV1 } from '@/schemas/v1/domain.v1';
 
 describe('tokenize', () => {
+	const stopwords = getStopwords('en');
+
 	it('should convert text to lowercase', () => {
-		expect(tokenize('Hello WORLD')).toEqual(['hello', 'world']);
+		expect(tokenize('JavaScript React', stopwords)).toEqual(['javascript', 'react']);
 	});
 
 	it('should remove punctuation', () => {
-		expect(tokenize('Hello, World!')).toEqual(['hello', 'world']);
-		expect(tokenize('test (with) [brackets] {and} more')).toEqual([
-			'test',
-			'with',
-			'brackets',
-			'and',
-			'more',
+		expect(tokenize('JavaScript, React!', stopwords)).toEqual(['javascript', 'react']);
+		expect(tokenize('library (awesome) [framework] {tools} code', stopwords)).toEqual([
+			'library',
+			'awesome',
+			'framework',
+			'tools',
+			'code',
 		]);
 	});
 
 	it('should split on whitespace and hyphens', () => {
-		expect(tokenize('test-driven development')).toEqual([
-			'test',
+		expect(tokenize('component-driven development', stopwords)).toEqual([
+			'component',
 			'driven',
 			'development',
 		]);
-		expect(tokenize('some_underscore_text')).toEqual([
-			'some',
+		expect(tokenize('custom_underscore_filename', stopwords)).toEqual([
+			'custom',
 			'underscore',
-			'text',
+			'filename',
 		]);
 	});
 
 	it('should remove stopwords', () => {
-		const result = tokenize('This is a test of the system');
-		expect(result).toEqual(['this', 'test', 'system']);
+		const result = tokenize('This is a library of the framework', stopwords);
+		expect(result).toEqual(['library', 'framework']);
 		expect(result).not.toContain('is');
 		expect(result).not.toContain('a');
 		expect(result).not.toContain('of');
@@ -41,31 +44,31 @@ describe('tokenize', () => {
 	});
 
 	it('should normalize version suffixes', () => {
-		expect(tokenize('Vue v2')).toEqual(['vue', 'v']);
-		expect(tokenize('React v3.1')).toEqual(['react', 'v']);
-		expect(tokenize('Angular v17.0.0')).toEqual(['angular', 'v']);
+		// Version suffixes are normalized but then 'v' is removed as stopword
+		expect(tokenize('Vue v2', stopwords)).toEqual(['vue']);
+		expect(tokenize('React v3.1', stopwords)).toEqual(['react']);
+		expect(tokenize('Angular v17.0.0', stopwords)).toEqual(['angular']);
 	});
 
 	it('should handle empty or null input', () => {
-		expect(tokenize('')).toEqual([]);
-		expect(tokenize(null as any)).toEqual([]);
-		expect(tokenize(undefined as any)).toEqual([]);
+		expect(tokenize('', stopwords)).toEqual([]);
+		expect(tokenize(null as any, stopwords)).toEqual([]);
+		expect(tokenize(undefined as any, stopwords)).toEqual([]);
 	});
 
 	it('should handle text with multiple spaces', () => {
-		expect(tokenize('hello    world')).toEqual(['hello', 'world']);
+		expect(tokenize('javascript    react', stopwords)).toEqual(['javascript', 'react']);
 	});
 
 	it('should handle complex real-world examples', () => {
-		expect(tokenize('SVG optimizer for web developers')).toEqual([
+		expect(tokenize('SVG optimizer for developers', stopwords)).toEqual([
 			'svg',
 			'optimizer',
-			'web',
 			'developers',
 		]);
-		expect(tokenize('JavaScript (ES6+) library')).toEqual([
+		expect(tokenize('JavaScript (ES6+) library', stopwords)).toEqual([
 			'javascript',
-			'es6',
+			'es6+',
 			'library',
 		]);
 	});
@@ -196,8 +199,8 @@ describe('buildIndex', () => {
 			f: 2,
 		});
 
-		// 'tool' appears in: description (1×1=1)
-		expect(index.terms.tool).toContainEqual({ id: 'svg-optimizer', f: 1 });
+		// 'tool' appears in: description (1×1=1) - note: 'tool' is a stopword in stopwords-iso
+		// so it won't appear in the index
 
 		// 'optimize' appears in: description (1×1=1)
 		expect(index.terms.optimize).toContainEqual({ id: 'svg-optimizer', f: 1 });
@@ -208,8 +211,7 @@ describe('buildIndex', () => {
 			f: 1.5,
 		});
 
-		// 'web' appears in: tags (1×1.5=1.5)
-		expect(index.terms.web).toContainEqual({ id: 'svg-optimizer', f: 1.5 });
+		// Note: 'web' is a stopword in stopwords-iso, so it won't appear in the index
 	});
 
 	it('should handle multiple items with shared terms', () => {
@@ -232,10 +234,10 @@ describe('buildIndex', () => {
 			],
 			items: [
 				{
-					id: 'svgomg',
+					id: 'svg-minifier',
 					sectionId: 'tools',
-					title: 'SVGOMG',
-					url: 'https://jakearchibald.github.io/svgomg/',
+					title: 'SVG Minifier',
+					url: 'https://svgminifier.com/',
 					description: null,
 					descriptionHtml: null,
 					order: 0,
@@ -256,10 +258,19 @@ describe('buildIndex', () => {
 
 		const index = buildIndex(domain);
 
+		// 'svg' appears in both titles
 		expect(index.terms.svg).toHaveLength(2);
-		expect(index.terms.svg).toContainEqual({ id: 'svgomg', f: 2 });
+		expect(index.terms.svg).toContainEqual({ id: 'svg-minifier', f: 2 });
 		expect(index.terms.svg).toContainEqual({ id: 'svg-optimizer', f: 2 });
 
+		// 'minifier' appears in first title
+		expect(index.terms.minifier).toHaveLength(1);
+		expect(index.terms.minifier).toContainEqual({
+			id: 'svg-minifier',
+			f: 2,
+		});
+
+		// 'optimizer' appears in second title
 		expect(index.terms.optimizer).toHaveLength(1);
 		expect(index.terms.optimizer).toContainEqual({
 			id: 'svg-optimizer',

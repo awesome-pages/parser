@@ -38,7 +38,7 @@ describe('buildIndex integration', () => {
 					sectionId: 'ai',
 					title: 'ChatGPT',
 					url: 'https://chat.openai.com/',
-					description: 'Conversational model',
+					description: 'Conversational AI model',
 					descriptionHtml: null,
 					order: 0,
 					tags: ['ai', 'llm'],
@@ -119,14 +119,15 @@ describe('buildIndex integration', () => {
 		});
 
 		// Verify term indexing
-		// 'ai' appears in tags for chatgpt (1.5) and claude (1.5), and in claude description (1)
+		// 'ai' appears in tags for chatgpt (1.5) and claude (1.5), 
+		// and in descriptions: chatgpt (1) and claude (1)
 		expect(index.terms.ai).toBeDefined();
 		expect(index.terms.ai.length).toBe(2);
 		const aiPostings = index.terms.ai;
 		const claudePosting = aiPostings.find((p) => p.id === 'claude');
 		const chatgptPosting = aiPostings.find((p) => p.id === 'chatgpt');
 		expect(claudePosting?.f).toBe(2.5); // tags: 1.5, description: 1
-		expect(chatgptPosting?.f).toBe(1.5); // tags: 1.5
+		expect(chatgptPosting?.f).toBe(2.5); // tags: 1.5, description: 1
 
 		// 'llm' appears in chatgpt tags
 		expect(index.terms.llm).toEqual([{ id: 'chatgpt', f: 1.5 }]);
