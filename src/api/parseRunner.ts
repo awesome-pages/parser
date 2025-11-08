@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import fg from 'fast-glob';
 import { buildPlaceholderContext } from '@/api/helpers/placeholderContext';
+import { generateBookmarksHtml } from '@/api/helpers/generateBookmarksHtml';
 import { renderTemplate } from '@/api/helpers/renderTemplate';
 import { mdastToDomain } from '@/core/mdastToDomain';
 import { markdownToAst } from '@/core/parser';
@@ -110,7 +111,6 @@ async function emitArtifact(
 				2,
 			);
 		case 'bookmarks':
-			// TODO: real bookmarks HTML
-			return `<!-- bookmarks for ${sourceId} -->\n`;
+			return generateBookmarksHtml(domain);
 	}
 }
