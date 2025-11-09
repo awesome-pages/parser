@@ -33,20 +33,21 @@ DomainV1 JSON
 
 ```mermaid
 flowchart LR
-    subgraph Input["🗂️ Input Sources"]
+    %% === NODES ===
+    subgraph Input["Input Sources"]
         A1["Local README.md"]
         A2["GitHub (via API)"]
         A3["HTTP(S) Remote URL"]
     end
 
-    subgraph Core["⚙️ Parser Core"]
-        B1["markdownToAst()"];
-        B2["extractMetadata()"];
-        B3["mdastToDomain()"];
-        B4["validate(DomainV1Schema)"];
+    subgraph Core["Parser Core"]
+        B1["markdownToAst()"]
+        B2["extractMetadata()"]
+        B3["mdastToDomain()"]
+        B4["validate(DomainV1Schema)"]
     end
 
-    subgraph Outputs["📦 Artifacts"]
+    subgraph Outputs["Output Artifacts"]
         C1["domain.json"]
         C2["index.json"]
         C3["bookmarks.html"]
@@ -55,7 +56,17 @@ flowchart LR
         C6["rss.xml"]
     end
 
+    %% === FLOW ===
     A1 & A2 & A3 --> B1 --> B2 --> B3 --> B4 --> C1 & C2 & C3 & C4 & C5 & C6
+
+    %% === STYLING ===
+    classDef input fill:#E3F2FD,stroke:#2196F3,stroke-width:2px,color:#0D47A1;
+    classDef core fill:#E8F5E9,stroke:#4CAF50,stroke-width:2px,color:#1B5E20;
+    classDef output fill:#FFF8E1,stroke:#FFC107,stroke-width:2px,color:#795548;
+
+    class A1,A2,A3 input;
+    class B1,B2,B3,B4 core;
+    class C1,C2,C3,C4,C5,C6 output;
 ```
 
 ---
