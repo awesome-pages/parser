@@ -1,10 +1,53 @@
 {
 	"name": "@awesome-pages/parser",
 	"version": "0.2.0",
+	"description": "A powerful parser for Awesome Lists that converts markdown to structured domain objects and generates various artifacts",
 	"type": "module",
-	"private": true,
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			},
+			"require": {
+				"types": "./dist/index.d.cts",
+				"default": "./dist/index.cjs"
+			}
+		}
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"keywords": [
+		"awesome",
+		"awesome-list",
+		"parser",
+		"markdown",
+		"remark",
+		"bookmarks",
+		"sitemap",
+		"rss",
+		"json-feed",
+		"search-index"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/awesome-pages/parser.git"
+	},
+	"bugs": {
+		"url": "https://github.com/awesome-pages/parser/issues"
+	},
+	"homepage": "https://github.com/awesome-pages/parser#readme",
+	"license": "MIT",
+	"author": "Awesome Pages",
 	"scripts": {
-		"build": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
+		"build": "tsup",
+		"build:legacy": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
 		"test": "vitest run",
 		"dev:test": "vitest",
 		"parse": "tsx src/cli.ts examples/awesome-click-and-use.md readme.domain.json",
@@ -13,7 +56,8 @@
 		"lint:fix": "biome check --write .",
 		"format": "biome format --write .",
 		"format:check": "biome format --check .",
-		"usage": "npx tsx --tsconfig tsconfig.json src/api/usage.ts"
+		"usage": "npx tsx --tsconfig tsconfig.json src/api/usage.ts",
+		"prepublishOnly": "pnpm run build"
 	},
 	"dependencies": {
 		"@sindresorhus/slugify": "^2.2.1",
@@ -35,6 +79,12 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.2",
+		"@semantic-release/changelog": "^6.0.3",
+		"@semantic-release/commit-analyzer": "^13.0.1",
+		"@semantic-release/git": "^10.0.1",
+		"@semantic-release/github": "^12.0.2",
+		"@semantic-release/npm": "^13.1.1",
+		"@semantic-release/release-notes-generator": "^14.1.0",
 		"@types/hast": "^3.0.4",
 		"@types/mdast": "^4.0.3",
 		"@types/node": "^22.7.4",
@@ -42,7 +92,9 @@
 		"ajv": "^8.17.1",
 		"ajv-formats": "^3.0.1",
 		"msw": "^2.11.6",
+		"semantic-release": "^25.0.2",
 		"tsc-alias": "^1.8.16",
+		"tsup": "^8.5.0",
 		"tsx": "^4.20.6",
 		"typescript": "^5.6.3",
 		"vfile": "^6.0.3",
