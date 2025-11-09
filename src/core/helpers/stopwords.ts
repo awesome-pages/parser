@@ -3,7 +3,7 @@
  * Uses stopwords-iso package for comprehensive multilingual support
  */
 
-// @ts-expect-error - stopwords-iso doesn't have type definitions
+// @ts-ignore - stopwords-iso doesn't have type definitions
 import stopwords from 'stopwords-iso';
 
 /**
