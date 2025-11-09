@@ -7,7 +7,7 @@ import type { DomainV1 } from './domain.v1';
 describe('DomainV1 JSON Schema Validation', () => {
 	const ajv = new Ajv({ strict: true, allErrors: true });
 	addFormats(ajv);
-	
+
 	const schema = generateDomainV1JsonSchema();
 	const validate = ajv.compile(schema);
 

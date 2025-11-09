@@ -8,7 +8,7 @@ describe('generateDomainV1JsonSchema', () => {
 		expect(schema).toBeDefined();
 		expect(schema.$ref).toBe('#/definitions/awesome-pages-domain.v1');
 		expect(schema.definitions).toBeDefined();
-		
+
 		const domainSchema = schema.definitions?.['awesome-pages-domain.v1'];
 		expect(domainSchema.type).toBe('object');
 		expect(domainSchema.properties).toHaveProperty('$schema');
