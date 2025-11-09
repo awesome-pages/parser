@@ -1,0 +1,43 @@
+# Source files
+src/
+tsconfig.json
+tsup.config.ts
+biome.json
+vitest.config.ts
+generate-schema.ts
+
+# Tests
+*.test.ts
+*.spec.ts
+**/__mocks__/
+**/fixtures/
+
+# Build artifacts (not dist/)
+*.tsbuildinfo
+.tsc-alias-cache
+
+# Development
+.github/
+.vscode/
+node_modules/
+pnpm-lock.yaml
+.env
+.env.*
+
+# Output files
+output.json
+readme.domain.json
+
+# Documentation (already in files whitelist)
+# README.md will be included via package.json files array
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Misc
+*.log
+.DS_Store
+coverage/
+.cache/
