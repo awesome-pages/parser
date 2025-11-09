@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import fg from 'fast-glob';
+import { CacheManager, NoopCacheManager } from '@/cache/manager';
 import { buildPlaceholderContext } from '@/api/helpers/placeholderContext';
 import { generateBookmarksHtml } from '@/api/artifacts/generateBookmarksHtml';
 import { generateSitemap } from '@/api/artifacts/generateSitemap';
@@ -20,86 +21,98 @@ export async function runParse(
 ): Promise<ParseResultFile[]> {
 	const results: ParseResultFile[] = [];
 
-	for (const spec of opts.sources) {
-		const strict = spec.strict ?? opts.strict ?? false;
+	// Load cache if enabled
+	const cache = opts.cache
+		? await CacheManager.load(opts.cachePath)
+		: new NoopCacheManager();
 
-		for (const from of spec.from) {
-			const isHttp = /^https?:\/\//i.test(from);
-			const isGithub = /^github:\/\//i.test(from);
-			const isLocal = !isHttp && !isGithub;
+	try {
+		for (const spec of opts.sources) {
+			const strict = spec.strict ?? opts.strict ?? false;
 
-			let inputs: string[] = [];
+			for (const from of spec.from) {
+				const isHttp = /^https?:\/\//i.test(from);
+				const isGithub = /^github:\/\//i.test(from);
+				const isLocal = !isHttp && !isGithub;
 
-			if (isLocal) {
-				const hasGlob = /[*?[\]{},]/.test(from);
-				if (hasGlob) {
-					const matches = await fg(from, { cwd: opts.rootDir, absolute: true });
-					inputs = matches;
+				let inputs: string[] = [];
+
+				if (isLocal) {
+					const hasGlob = /[*?[\]{},]/.test(from);
+					if (hasGlob) {
+						const matches = await fg(from, { cwd: opts.rootDir, absolute: true });
+						inputs = matches;
+					} else {
+						const abs = path.isAbsolute(from)
+							? from
+							: path.join(opts.rootDir, from);
+						inputs = [abs];
+					}
 				} else {
-					const abs = path.isAbsolute(from)
-						? from
-						: path.join(opts.rootDir, from);
-					inputs = [abs];
+					inputs = [from];
 				}
-			} else {
-				inputs = [from];
-			}
 
-			for (const input of inputs) {
-				const source = createSource(input, { githubToken: opts.githubToken });
-				const markdown = await source.read();
-				const sourceId = source.id();
+				for (const input of inputs) {
+					const source = createSource(input, { githubToken: opts.githubToken });
+					const markdown = await source.read(cache);
+					const sourceId = source.id();
 
-				const {
-					tree,
-					title,
-					description,
-					descriptionHtml,
-					frontmatter,
-					language,
-				} = await markdownToAst(markdown, sourceId);
+					const {
+						tree,
+						title,
+						description,
+						descriptionHtml,
+						frontmatter,
+						language,
+					} = await markdownToAst(markdown, sourceId);
 
-				const domain: DomainV1 = mdastToDomain(tree, {
-					title,
-					description,
-					descriptionHtml,
-					frontmatter,
-					language,
-					generatedAt: new Date().toISOString(),
-					source: sourceId,
-					strict,
-				});
+					const domain: DomainV1 = mdastToDomain(tree, {
+						title,
+						description,
+						descriptionHtml,
+						frontmatter,
+						language,
+						generatedAt: new Date().toISOString(),
+						source: sourceId,
+						strict,
+					});
 
-				const baseCtx = buildPlaceholderContext({
-					input,
-					sourceId,
-					rootDir: opts.rootDir,
-				});
+					const baseCtx = buildPlaceholderContext({
+						input,
+						sourceId,
+						rootDir: opts.rootDir,
+					});
 
-				for (const out of spec.outputs) {
-					for (const artifact of out.artifact) {
-						const content = await emitArtifact(artifact, domain, sourceId);
-						const rendered = renderTemplate(out.to, {
-							...baseCtx,
-							artifact,
-						});
+					for (const out of spec.outputs) {
+						for (const artifact of out.artifact) {
+							const content = await emitArtifact(artifact, domain, sourceId);
+							const rendered = renderTemplate(out.to, {
+								...baseCtx,
+								artifact,
+							});
 
-						const finalPath = path.isAbsolute(rendered)
-							? rendered
-							: path.join(opts.rootDir, rendered);
+							const finalPath = path.isAbsolute(rendered)
+								? rendered
+								: path.join(opts.rootDir, rendered);
 
-						await fs.mkdir(path.dirname(finalPath), { recursive: true });
-						await fs.writeFile(finalPath, content, 'utf8');
+							await fs.mkdir(path.dirname(finalPath), { recursive: true });
+							await fs.writeFile(finalPath, content, 'utf8');
 
-						results.push({
-							file: finalPath,
-							artifact,
-							sourceId,
-							bytes: Buffer.byteLength(content, 'utf8'),
-						});
+							results.push({
+								file: finalPath,
+								artifact,
+								sourceId,
+								bytes: Buffer.byteLength(content, 'utf8'),
+							});
+						}
 					}
 				}
 			}
+		}
+	} finally {
+		// Always save cache at the end (even if there were errors)
+		if (opts.cache) {
+			await cache.save();
 		}
 	}
 
