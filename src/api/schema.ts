@@ -20,6 +20,8 @@ export const ParseOptionsSchema = z.object({
 	concurrency: z.number().int().positive().max(128).default(8),
 	githubToken: z.string().min(1).optional(),
 	rootDir: z.string().min(1).optional(),
+	cache: z.boolean().optional().default(true),
+	cachePath: z.string().min(1).optional(),
 	sources: z.array(SourceSpecSchema).min(1),
 });
 
@@ -39,17 +41,24 @@ export type NormalizedOptions = {
 	concurrency: number;
 	githubToken?: string;
 	rootDir: string;
+	cache: boolean;
+	cachePath: string;
 	sources: NormalizedSource[];
 };
 
 export function parseAndNormalizeOptions(input: unknown): NormalizedOptions {
 	const parsed = ParseOptionsSchema.parse(input);
 
+	const rootDir = parsed.rootDir ?? process.cwd();
+	const cachePath = parsed.cachePath ?? `${rootDir}/.awesome-pages/cache.v1.json`;
+
 	return {
 		strict: parsed.strict,
 		concurrency: parsed.concurrency,
 		githubToken: parsed.githubToken,
-		rootDir: parsed.rootDir ?? process.cwd(),
+		rootDir,
+		cache: parsed.cache,
+		cachePath,
 		sources: parsed.sources.map((s) => ({
 			strict: s.strict,
 			from: Array.isArray(s.from) ? s.from : [s.from],

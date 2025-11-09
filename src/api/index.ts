@@ -21,6 +21,8 @@ export type ParseOptions = {
 	concurrency?: number;
 	githubToken?: string;
 	rootDir?: string;
+	cache?: boolean;
+	cachePath?: string;
 	sources: SourceSpec[];
 };
 
