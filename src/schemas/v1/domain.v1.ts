@@ -3,6 +3,19 @@ import slugify from '@/schemas/helpers/slugify';
 
 const NonEmpty = z.string().trim().min(1);
 
+// Schema base da Section (output/estrutura final)
+export const SectionV1Base = z.object({
+	id: NonEmpty,
+	title: NonEmpty,
+	parentId: z.string().trim().nullable(),
+	depth: z.number().int().nonnegative(),
+	order: z.number().int().nonnegative(),
+	path: NonEmpty,
+	descriptionHtml: z.string().trim().nullable(),
+});
+export type SectionV1 = z.infer<typeof SectionV1Base>;
+
+// Schema de input para Section
 export const SectionIn = z.object({
 	title: NonEmpty,
 	parentId: z.string().trim().nullable(),
@@ -12,6 +25,7 @@ export const SectionIn = z.object({
 });
 export type SectionIn = z.infer<typeof SectionIn>;
 
+// Schema com transform para parsing
 export const SectionV1Schema = SectionIn.transform((s) => {
 	const id = slugify(s.title);
 	const path = s.parentId ? `${s.parentId}/${id}` : id;
@@ -25,8 +39,21 @@ export const SectionV1Schema = SectionIn.transform((s) => {
 		descriptionHtml: s.descriptionHtml ?? null,
 	};
 });
-export type SectionV1 = z.infer<typeof SectionV1Schema>;
 
+// Schema base do Item (output/estrutura final)
+export const ItemV1Base = z.object({
+	id: NonEmpty,
+	sectionId: NonEmpty,
+	title: NonEmpty,
+	url: z.string().url().optional(),
+	description: z.string().trim().nullable(),
+	descriptionHtml: z.string().trim().nullable(),
+	order: z.number().int().nonnegative(),
+	tags: z.array(z.string()),
+});
+export type ItemV1 = z.infer<typeof ItemV1Base>;
+
+// Schema de input para Item
 export const ItemIn = z.object({
 	id: NonEmpty,
 	sectionId: NonEmpty,
@@ -39,6 +66,7 @@ export const ItemIn = z.object({
 });
 export type ItemIn = z.infer<typeof ItemIn>;
 
+// Schema com transform para parsing
 export const ItemV1Schema = ItemIn.transform((i) => ({
 	id: i.id,
 	sectionId: i.sectionId,
@@ -49,10 +77,29 @@ export const ItemV1Schema = ItemIn.transform((i) => ({
 	order: i.order ?? 0,
 	tags: i.tags ?? [],
 }));
-export type ItemV1 = z.infer<typeof ItemV1Schema>;
 
+// Schema base do DomainV1 (output/estrutura final)
+export const DomainV1Base = z.object({
+	$schema: z.string().url().optional(),
+	schemaVersion: z.literal(1),
+	meta: z.object({
+		title: z.string().optional(),
+		description: z.string().optional(),
+		descriptionHtml: z.string().optional(),
+		generatedAt: z.string().datetime(),
+		source: z.string().min(1),
+		language: z.string().optional(),
+		frontmatter: z.record(z.any()).optional(),
+	}),
+	sections: z.array(SectionV1Base),
+	items: z.array(ItemV1Base),
+});
+export type DomainV1 = z.infer<typeof DomainV1Base>;
+
+// Schema com transform e validação para parsing
 export const DomainV1Schema = z
 	.object({
+		$schema: z.string().url().optional(),
 		schemaVersion: z.literal(1),
 		meta: z.object({
 			title: z.string().optional(),
@@ -78,4 +125,3 @@ export const DomainV1Schema = z
 			}
 		}
 	});
-export type DomainV1 = z.infer<typeof DomainV1Schema>;
