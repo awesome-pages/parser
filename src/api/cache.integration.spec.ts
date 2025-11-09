@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs/promises';
-import path from 'node:path';
 import os from 'node:os';
+import path from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { parse } from './index';
 
 describe('parse() with cache', () => {
@@ -13,7 +13,7 @@ describe('parse() with cache', () => {
 		tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'parse-cache-test-'));
 		testFile = path.join(tmpDir, 'test.md');
 		cachePath = path.join(tmpDir, '.awesome-pages', 'cache.v1.json');
-		
+
 		await fs.writeFile(
 			testFile,
 			'# Awesome List\n\nA test list\n\n## Category\n\n- [Item](https://example.com)',
@@ -60,7 +60,7 @@ describe('parse() with cache', () => {
 
 		expect(cache.version).toBe(1);
 		expect(cache.entries).toBeDefined();
-		
+
 		const sourceId = `local:${testFile}`;
 		expect(cache.entries[sourceId]).toBeDefined();
 		expect(cache.entries[sourceId].kind).toBe('local');
@@ -146,11 +146,7 @@ describe('parse() with cache', () => {
 
 	it('should handle multiple sources in cache', async () => {
 		const testFile2 = path.join(tmpDir, 'test2.md');
-		await fs.writeFile(
-			testFile2,
-			'# Another List\n\nAnother test',
-			'utf8',
-		);
+		await fs.writeFile(testFile2, '# Another List\n\nAnother test', 'utf8');
 
 		await parse({
 			rootDir: tmpDir,
@@ -163,7 +159,7 @@ describe('parse() with cache', () => {
 		});
 
 		const cache = JSON.parse(await fs.readFile(cachePath, 'utf8'));
-		
+
 		expect(Object.keys(cache.entries)).toHaveLength(2);
 		expect(cache.entries[`local:${testFile}`]).toBeDefined();
 		expect(cache.entries[`local:${testFile2}`]).toBeDefined();

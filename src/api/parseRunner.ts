@@ -1,16 +1,16 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import fg from 'fast-glob';
-import { CacheManager, NoopCacheManager } from '@/cache/manager';
-import { buildPlaceholderContext } from '@/api/helpers/placeholderContext';
 import { generateBookmarksHtml } from '@/api/artifacts/generateBookmarksHtml';
-import { generateSitemap } from '@/api/artifacts/generateSitemap';
 import { generateJsonFeed } from '@/api/artifacts/generateJsonFeed';
 import { generateRssXml } from '@/api/artifacts/generateRssXml';
+import { generateSitemap } from '@/api/artifacts/generateSitemap';
+import { buildPlaceholderContext } from '@/api/helpers/placeholderContext';
 import { renderTemplate } from '@/api/helpers/renderTemplate';
+import { CacheManager, NoopCacheManager } from '@/cache/manager';
+import { buildIndex } from '@/core/helpers/buildIndex';
 import { mdastToDomain } from '@/core/mdastToDomain';
 import { markdownToAst } from '@/core/parser';
-import { buildIndex } from '@/core/helpers/buildIndex';
 import type { DomainV1 } from '@/schemas/v1/domain.v1';
 import { createSource } from '@/sources/createSource';
 import type { Artifact, ParseResultFile } from './index';
@@ -40,7 +40,10 @@ export async function runParse(
 				if (isLocal) {
 					const hasGlob = /[*?[\]{},]/.test(from);
 					if (hasGlob) {
-						const matches = await fg(from, { cwd: opts.rootDir, absolute: true });
+						const matches = await fg(from, {
+							cwd: opts.rootDir,
+							absolute: true,
+						});
 						inputs = matches;
 					} else {
 						const abs = path.isAbsolute(from)

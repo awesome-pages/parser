@@ -42,7 +42,9 @@ describe('generateRssXml', () => {
 
 		const xml = generateRssXml(domain);
 
-		expect(xml).toContain('<lastBuildDate>Sat, 08 Nov 2025 12:00:00 GMT</lastBuildDate>');
+		expect(xml).toContain(
+			'<lastBuildDate>Sat, 08 Nov 2025 12:00:00 GMT</lastBuildDate>',
+		);
 	});
 
 	it('should generate items with all required fields', () => {
@@ -331,11 +333,17 @@ describe('generateRssXml', () => {
 		const xml = generateRssXml(domain);
 
 		expect(xml).toContain('<title>Awesome Click and Use</title>');
-		expect(xml).toContain('<link>https://github.com/teles/awesome-click-and-use</link>');
-		expect(xml).toContain('<description>Useful and awesome online tools that I often use. No download, no signup required.</description>');
+		expect(xml).toContain(
+			'<link>https://github.com/teles/awesome-click-and-use</link>',
+		);
+		expect(xml).toContain(
+			'<description>Useful and awesome online tools that I often use. No download, no signup required.</description>',
+		);
 		expect(xml).toContain('<title>ChatGPT</title>');
 		expect(xml).toContain('<link>https://chat.openai.com/chat</link>');
-		expect(xml).toContain('<description>Dialogue optimized model</description>');
+		expect(xml).toContain(
+			'<description>Dialogue optimized model</description>',
+		);
 	});
 
 	it('should handle empty channel values gracefully', () => {

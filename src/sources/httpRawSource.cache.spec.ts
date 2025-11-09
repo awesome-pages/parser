@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { http, HttpResponse } from 'msw';
-import { server } from '@/tests/server';
-import { HttpRawSource } from './httpRawSource';
+import { HttpResponse, http } from 'msw';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { NoopCacheManager } from '@/cache/manager';
 import type { RemoteCacheEntry } from '@/cache/types';
+import { server } from '@/tests/server';
+import { HttpRawSource } from './httpRawSource';
 
 class MockCacheManager extends NoopCacheManager {
 	private entries = new Map<string, RemoteCacheEntry>();
@@ -117,7 +117,7 @@ describe('HttpRawSource with cache', () => {
 
 		expect(content).toBe('# Cached Content');
 		expect(callCount).toBe(2); // First 304, then fresh fetch
-		
+
 		const cachedEntry = cache.getEntry(`http:${testUrl}`);
 		expect(cachedEntry?.lastStatus).toBe(304);
 	});

@@ -10,7 +10,7 @@ export class LocalFileSource implements MarkdownSource {
 	}
 	async read(cache?: CacheManager): Promise<string> {
 		const sourceId = this.id();
-		
+
 		// Get file stats for cache
 		if (cache) {
 			const stats = await fs.stat(this.filepath);
@@ -21,7 +21,7 @@ export class LocalFileSource implements MarkdownSource {
 				lastSeen: new Date().toISOString(),
 			});
 		}
-		
+
 		return fs.readFile(this.filepath, 'utf8');
 	}
 }

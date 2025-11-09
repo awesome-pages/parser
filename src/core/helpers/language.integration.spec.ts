@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
-import { markdownToAst } from '@/core/parser';
-import { mdastToDomain } from '@/core/mdastToDomain';
-import { buildIndex } from '@/core/helpers/buildIndex';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { describe, expect, it } from 'vitest';
+import { buildIndex } from '@/core/helpers/buildIndex';
+import { mdastToDomain } from '@/core/mdastToDomain';
+import { markdownToAst } from '@/core/parser';
 
 describe('Language feature integration', () => {
 	it('should extract language from frontmatter', async () => {
@@ -123,7 +123,10 @@ Uma lista de ferramentas úteis.
 	});
 
 	it('should process the Portuguese fixture file correctly', async () => {
-		const fixtureDir = new URL('../../tests/fixtures/readmes/', import.meta.url);
+		const fixtureDir = new URL(
+			'../../tests/fixtures/readmes/',
+			import.meta.url,
+		);
 		const fixturePath = path.join(
 			fixtureDir.pathname,
 			'portuguese-language.md',

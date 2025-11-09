@@ -2,9 +2,9 @@ export { CacheManager, NoopCacheManager } from './manager';
 export type {
 	CacheEntry,
 	CacheFile,
+	CacheManager as ICacheManager,
 	LocalCacheEntry,
 	RemoteCacheEntry,
-	CacheManager as ICacheManager,
 } from './types';
 export {
 	CacheEntrySchema,

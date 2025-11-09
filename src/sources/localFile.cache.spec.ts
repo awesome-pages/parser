@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs/promises';
-import path from 'node:path';
 import os from 'node:os';
-import { LocalFileSource } from './localFile';
+import path from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { NoopCacheManager } from '@/cache/manager';
 import type { LocalCacheEntry } from '@/cache/types';
+import { LocalFileSource } from './localFile';
 
 class MockCacheManager extends NoopCacheManager {
 	private entries = new Map<string, LocalCacheEntry>();

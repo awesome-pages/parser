@@ -1,7 +1,14 @@
 import { z } from 'zod';
 import type { Artifact } from './index';
 
-export const ArtifactSchema = z.enum(['domain', 'index', 'bookmarks', 'sitemap', 'rss-json', 'rss-xml']);
+export const ArtifactSchema = z.enum([
+	'domain',
+	'index',
+	'bookmarks',
+	'sitemap',
+	'rss-json',
+	'rss-xml',
+]);
 export type ArtifactZ = z.infer<typeof ArtifactSchema>;
 
 export const OutputTargetSchema = z.object({
@@ -50,7 +57,8 @@ export function parseAndNormalizeOptions(input: unknown): NormalizedOptions {
 	const parsed = ParseOptionsSchema.parse(input);
 
 	const rootDir = parsed.rootDir ?? process.cwd();
-	const cachePath = parsed.cachePath ?? `${rootDir}/.awesome-pages/cache.v1.json`;
+	const cachePath =
+		parsed.cachePath ?? `${rootDir}/.awesome-pages/cache.v1.json`;
 
 	return {
 		strict: parsed.strict,

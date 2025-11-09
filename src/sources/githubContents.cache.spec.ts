@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
-import { http, HttpResponse } from 'msw';
-import { server } from '@/tests/server';
-import { GitHubContentsApiSource } from './githubContents';
+import { HttpResponse, http } from 'msw';
+import { describe, expect, it } from 'vitest';
 import { NoopCacheManager } from '@/cache/manager';
 import type { RemoteCacheEntry } from '@/cache/types';
+import { server } from '@/tests/server';
+import { GitHubContentsApiSource } from './githubContents';
 
 class MockCacheManager extends NoopCacheManager {
 	private entries = new Map<string, RemoteCacheEntry>();
@@ -106,7 +106,7 @@ describe('GitHubContentsApiSource with cache', () => {
 				// Verify no conditional headers are sent
 				expect(request.headers.get('if-none-match')).toBeNull();
 				expect(request.headers.get('if-modified-since')).toBeNull();
-				
+
 				return HttpResponse.text('# Test Content');
 			}),
 		);

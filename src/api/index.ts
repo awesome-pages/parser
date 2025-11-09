@@ -1,7 +1,13 @@
 import { runParse } from '@/api/parseRunner';
 import { parseAndNormalizeOptions } from '@/api/schema';
 
-export type Artifact = 'domain' | 'index' | 'bookmarks' | 'sitemap' | 'rss-json' | 'rss-xml';
+export type Artifact =
+	| 'domain'
+	| 'index'
+	| 'bookmarks'
+	| 'sitemap'
+	| 'rss-json'
+	| 'rss-xml';
 
 export type OutputTarget = {
 	/** One or more artifacts to emit for this source */

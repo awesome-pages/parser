@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs/promises';
-import path from 'node:path';
 import os from 'node:os';
+import path from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { CacheManager, NoopCacheManager } from './manager';
-import type { RemoteCacheEntry, LocalCacheEntry } from './types';
+import type { LocalCacheEntry, RemoteCacheEntry } from './types';
 
 describe('CacheManager', () => {
 	let tmpDir: string;
@@ -112,13 +112,13 @@ describe('CacheManager', () => {
 
 	it('should persist multiple entries', async () => {
 		const cache = await CacheManager.load(cachePath);
-		
+
 		cache.setEntry('remote-1', {
 			kind: 'remote',
 			etag: '"etag1"',
 			lastSeen: new Date().toISOString(),
 		});
-		
+
 		cache.setEntry('local-1', {
 			kind: 'local',
 			mtimeMs: 123456,

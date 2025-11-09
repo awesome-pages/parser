@@ -38,10 +38,7 @@ describe('generateJsonFeed', () => {
 			items: [],
 		};
 
-		const output = generateJsonFeed(
-			domain,
-			'https://example.com/feed.json',
-		);
+		const output = generateJsonFeed(domain, 'https://example.com/feed.json');
 		const feed = JSON.parse(output);
 
 		expect(feed.feed_url).toBe('https://example.com/feed.json');

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { detectLanguage, normalizeBcp47 } from './detectLanguage';
 
 describe('detectLanguage', () => {

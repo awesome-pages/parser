@@ -33,10 +33,7 @@ interface JsonFeedItem {
  * @param feedUrl - Optional URL where this feed will be published
  * @returns JSON string in JSON Feed v1.1 format
  */
-export function generateJsonFeed(
-	domain: DomainV1,
-	feedUrl?: string,
-): string {
+export function generateJsonFeed(domain: DomainV1, feedUrl?: string): string {
 	const feed = buildFeedVM(domain);
 
 	const jsonFeed: JsonFeed = {

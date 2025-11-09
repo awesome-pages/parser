@@ -1,18 +1,18 @@
 import path from 'node:path';
+import { toHtml } from 'hast-util-to-html';
 import type { Heading, Paragraph, Root, RootContent, Yaml } from 'mdast';
+import { toHast } from 'mdast-util-to-hast';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { VFile } from 'vfile';
-import { toHast } from 'mdast-util-to-hast';
-import { toHtml } from 'hast-util-to-html';
-import remarkAwesomePagesMarkers from '@/plugins/awesomePagesMarkers.js';
-import { escapeHtml } from '@/core/helpers/escapeHtml';
 import {
 	detectLanguage,
 	normalizeBcp47,
 } from '@/core/helpers/detectLanguage.js';
+import { escapeHtml } from '@/core/helpers/escapeHtml';
+import remarkAwesomePagesMarkers from '@/plugins/awesomePagesMarkers.js';
 
 interface AwesomePagesData {
 	awesomePages?: {
@@ -209,7 +209,9 @@ export async function markdownToAst(
 	const language =
 		frontmatterLanguage ||
 		detectLanguage(
-			[title, description].filter((text): text is string => text !== null).join(' ') || markdown,
+			[title, description]
+				.filter((text): text is string => text !== null)
+				.join(' ') || markdown,
 		);
 
 	const vfile = new VFile({ value: markdown, path: sourceId });

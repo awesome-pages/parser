@@ -14,7 +14,10 @@ export class CacheManager implements ICacheManager {
 	private entries: Map<string, CacheEntry>;
 	private cachePath: string;
 
-	constructor(cachePath: string, initialEntries: Record<string, CacheEntry> = {}) {
+	constructor(
+		cachePath: string,
+		initialEntries: Record<string, CacheEntry> = {},
+	) {
 		this.cachePath = cachePath;
 		this.entries = new Map(Object.entries(initialEntries));
 	}
@@ -34,7 +37,11 @@ export class CacheManager implements ICacheManager {
 		};
 
 		await fs.mkdir(path.dirname(this.cachePath), { recursive: true });
-		await fs.writeFile(this.cachePath, JSON.stringify(cacheFile, null, 2), 'utf8');
+		await fs.writeFile(
+			this.cachePath,
+			JSON.stringify(cacheFile, null, 2),
+			'utf8',
+		);
 	}
 
 	/**

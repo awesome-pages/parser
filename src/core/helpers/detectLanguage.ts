@@ -45,10 +45,7 @@ const ISO_639_3_TO_BCP_47: Record<string, string> = {
  * @param minConfidence - Minimum confidence threshold (0-1). Default: 0.5
  * @returns BCP 47 language tag or 'en' if detection fails
  */
-export function detectLanguage(
-	text: string,
-	minConfidence = 0.5,
-): string {
+export function detectLanguage(text: string, minConfidence = 0.5): string {
 	if (!text || text.trim().length < 30) {
 		// Too short to reliably detect, default to English
 		return 'en';

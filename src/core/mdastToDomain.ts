@@ -1,3 +1,4 @@
+import { toHtml } from 'hast-util-to-html';
 import type {
 	Heading,
 	Link,
@@ -9,7 +10,6 @@ import type {
 	Text,
 } from 'mdast';
 import { toHast } from 'mdast-util-to-hast';
-import { toHtml } from 'hast-util-to-html';
 import { visit } from 'unist-util-visit';
 import { computeDeterministicItemId } from '@/core/helpers/computeDeterministicItemId.js';
 import extractInlineTags from '@/core/helpers/extractInlineTags';

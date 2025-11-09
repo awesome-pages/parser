@@ -50,7 +50,7 @@ export function tokenize(text: string, stopwords: Set<string>): string[] {
 	// Lowercase and replace punctuation with spaces, but keep dots temporarily for version detection
 	const normalized = text
 		.toLowerCase()
-		.replace(/[,!?:;()\[\]{}'"]/g, ' ')
+		.replace(/[,!?:;()[\]{}'"]/g, ' ')
 		// Keep hyphens and dots temporarily
 		.replace(/[-_/]/g, ' ');
 

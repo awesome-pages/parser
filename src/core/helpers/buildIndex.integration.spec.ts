@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { buildIndex } from '@/core/helpers/buildIndex';
 import type { DomainV1 } from '@/schemas/v1/domain.v1';
 
@@ -119,7 +119,7 @@ describe('buildIndex integration', () => {
 		});
 
 		// Verify term indexing
-		// 'ai' appears in tags for chatgpt (1.5) and claude (1.5), 
+		// 'ai' appears in tags for chatgpt (1.5) and claude (1.5),
 		// and in descriptions: chatgpt (1) and claude (1)
 		expect(index.terms.ai).toBeDefined();
 		expect(index.terms.ai.length).toBe(2);
@@ -266,8 +266,7 @@ describe('buildIndex integration', () => {
 		expect(json).toHaveProperty('terms');
 
 		// Meta can have either source OR (repo + ref + path)
-		const hasParsedSource =
-			json.meta.repo && json.meta.ref && json.meta.path;
+		const hasParsedSource = json.meta.repo && json.meta.ref && json.meta.path;
 		const hasRawSource = json.meta.source;
 		expect(!!(hasParsedSource || hasRawSource)).toBe(true);
 

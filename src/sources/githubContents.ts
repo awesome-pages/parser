@@ -65,7 +65,7 @@ export class GitHubContentsApiSource implements MarkdownSource {
 		if (!token) {
 			const rawUrl = `https://raw.githubusercontent.com/${this.owner}/${this.repo}/${this.ref}/${this.filePath}`;
 			const rawHeaders: Record<string, string> = {};
-			
+
 			// Add conditional headers for raw endpoint too
 			if (cache) {
 				const cached = cache.getEntry(sourceId);
@@ -79,8 +79,13 @@ export class GitHubContentsApiSource implements MarkdownSource {
 				}
 			}
 
-			const rawRes = await fetchFn(rawUrl, Object.keys(rawHeaders).length > 0 ? { headers: rawHeaders } : undefined);
-			
+			const rawRes = await fetchFn(
+				rawUrl,
+				Object.keys(rawHeaders).length > 0
+					? { headers: rawHeaders }
+					: undefined,
+			);
+
 			if (rawRes.status === 304) {
 				// Content not modified - update cache and re-fetch without conditional headers
 				// (we don't store content, so we need to fetch again)
@@ -99,7 +104,7 @@ export class GitHubContentsApiSource implements MarkdownSource {
 					return await freshRes.text();
 				}
 			}
-			
+
 			if (rawRes.ok) {
 				// Update cache on successful response
 				if (cache) {
@@ -177,7 +182,7 @@ export class GitHubContentsApiSource implements MarkdownSource {
 				'Unexpected GitHub contents response shape',
 			);
 		}
-		
+
 		// Update cache on successful response
 		if (cache) {
 			cache.setEntry(sourceId, {
@@ -188,7 +193,7 @@ export class GitHubContentsApiSource implements MarkdownSource {
 				lastStatus: res.status,
 			});
 		}
-		
+
 		const buf = Buffer.from(parsed.data.content, 'base64');
 		return buf.toString('utf8');
 	}

@@ -1,24 +1,26 @@
-import { describe, it, expect } from 'vitest';
-import { tokenize, buildIndex } from './buildIndex';
-import { getStopwords } from './stopwords';
+import { describe, expect, it } from 'vitest';
 import type { DomainV1 } from '@/schemas/v1/domain.v1';
+import { buildIndex, tokenize } from './buildIndex';
+import { getStopwords } from './stopwords';
 
 describe('tokenize', () => {
 	const stopwords = getStopwords('en');
 
 	it('should convert text to lowercase', () => {
-		expect(tokenize('JavaScript React', stopwords)).toEqual(['javascript', 'react']);
+		expect(tokenize('JavaScript React', stopwords)).toEqual([
+			'javascript',
+			'react',
+		]);
 	});
 
 	it('should remove punctuation', () => {
-		expect(tokenize('JavaScript, React!', stopwords)).toEqual(['javascript', 'react']);
-		expect(tokenize('library (awesome) [framework] {tools} code', stopwords)).toEqual([
-			'library',
-			'awesome',
-			'framework',
-			'tools',
-			'code',
+		expect(tokenize('JavaScript, React!', stopwords)).toEqual([
+			'javascript',
+			'react',
 		]);
+		expect(
+			tokenize('library (awesome) [framework] {tools} code', stopwords),
+		).toEqual(['library', 'awesome', 'framework', 'tools', 'code']);
 	});
 
 	it('should split on whitespace and hyphens', () => {
@@ -57,7 +59,10 @@ describe('tokenize', () => {
 	});
 
 	it('should handle text with multiple spaces', () => {
-		expect(tokenize('javascript    react', stopwords)).toEqual(['javascript', 'react']);
+		expect(tokenize('javascript    react', stopwords)).toEqual([
+			'javascript',
+			'react',
+		]);
 	});
 
 	it('should handle complex real-world examples', () => {
