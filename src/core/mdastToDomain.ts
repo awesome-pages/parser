@@ -173,6 +173,7 @@ export function mdastToDomain(tree: Root, opts: Options) {
 	});
 
 	const domain = {
+		$schema: 'https://awesome-pages.github.io/schemas/domain/v1.json',
 		schemaVersion: 1 as const,
 		meta: {
 			title: opts.title ?? undefined,
