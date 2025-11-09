@@ -1,3 +1,4 @@
+import type { CacheManager } from '@/cache/types';
 import {
 	MarkdownSourceError,
 	UnsupportedMimeTypeError,
@@ -54,7 +55,8 @@ export class HttpRawSource implements MarkdownSource {
 		return `http:${this.url}`;
 	}
 
-	async read(): Promise<string> {
+	async read(cache?: CacheManager): Promise<string> {
+		const sourceId = this.id();
 		const {
 			allowedContentTypes,
 			timeoutMs,
@@ -69,14 +71,29 @@ export class HttpRawSource implements MarkdownSource {
 		const ctl = new AbortController();
 		const timer = setTimeout(() => ctl.abort(), timeoutMs);
 
+		const headers: Record<string, string> = {
+			'User-Agent': userAgent,
+			Accept: '*/*',
+		};
+
+		// Add conditional headers from cache
+		if (cache) {
+			const cached = cache.getEntry(sourceId);
+			if (cached && cached.kind === 'remote') {
+				if (cached.etag) {
+					headers['If-None-Match'] = cached.etag;
+				}
+				if (cached.lastModified) {
+					headers['If-Modified-Since'] = cached.lastModified;
+				}
+			}
+		}
+
 		let res: Response;
 		try {
 			res = await fetchFn(this.url, {
 				redirect: 'follow',
-				headers: {
-					'User-Agent': userAgent,
-					Accept: '*/*',
-				},
+				headers,
 				signal: ctl.signal,
 			});
 		} catch (err) {
@@ -88,6 +105,41 @@ export class HttpRawSource implements MarkdownSource {
 			);
 		} finally {
 			clearTimeout(timer);
+		}
+
+		// Handle 304 Not Modified
+		if (res.status === 304) {
+			if (cache) {
+				cache.setEntry(sourceId, {
+					kind: 'remote',
+					etag: res.headers.get('etag') || undefined,
+					lastModified: res.headers.get('last-modified') || undefined,
+					lastSeen: new Date().toISOString(),
+					lastStatus: 304,
+				});
+			}
+			// Fetch again without conditional headers to get the content
+			const freshHeaders = {
+				'User-Agent': userAgent,
+				Accept: '*/*',
+			};
+			const freshTimer = setTimeout(() => ctl.abort(), timeoutMs);
+			try {
+				res = await fetchFn(this.url, {
+					redirect: 'follow',
+					headers: freshHeaders,
+					signal: ctl.signal,
+				});
+			} catch (err) {
+				clearTimeout(freshTimer);
+				throw new MarkdownSourceError(
+					`Network error for ${this.url}`,
+					'HTTP_FETCH',
+					err,
+				);
+			} finally {
+				clearTimeout(freshTimer);
+			}
 		}
 
 		// Status check
@@ -139,6 +191,17 @@ export class HttpRawSource implements MarkdownSource {
 				`Response too large after download (${text.length} bytes) for ${this.url}`,
 				'HTTP_MAX_SIZE',
 			);
+		}
+
+		// Update cache on successful response
+		if (cache) {
+			cache.setEntry(sourceId, {
+				kind: 'remote',
+				etag: res.headers.get('etag') || undefined,
+				lastModified: res.headers.get('last-modified') || undefined,
+				lastSeen: new Date().toISOString(),
+				lastStatus: res.status,
+			});
 		}
 
 		return text;
