@@ -108,7 +108,9 @@ export class HttpRawSource implements MarkdownSource {
 		}
 
 		// Handle 304 Not Modified
+		let was304 = false;
 		if (res.status === 304) {
+			was304 = true;
 			if (cache) {
 				cache.setEntry(sourceId, {
 					kind: 'remote',
@@ -194,7 +196,7 @@ export class HttpRawSource implements MarkdownSource {
 		}
 
 		// Update cache on successful response
-		if (cache) {
+		if (cache && !was304) {
 			cache.setEntry(sourceId, {
 				kind: 'remote',
 				etag: res.headers.get('etag') || undefined,
