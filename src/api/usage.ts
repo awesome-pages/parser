@@ -2,6 +2,8 @@ import { parse } from '@/api/index';
 
 await parse({
 	// githubToken: process.env.GITHUB_TOKEN,
+	cache: true,
+	cachePath: './.cache/usage-cache.json',
 	sources: [
 		{
 			from: [
