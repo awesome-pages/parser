@@ -1,4 +1,6 @@
+import type { CacheManager } from '@/cache/types';
+
 export interface MarkdownSource {
-	read(): Promise<string>;
+	read(cache?: CacheManager): Promise<string>;
 	id(): string;
 }
