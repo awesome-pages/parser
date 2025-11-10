@@ -174,10 +174,11 @@ flowchart LR
         C4["sitemap.xml"]
         C5["rss.json"]
         C6["rss.xml"]
+        C7["data.csv"]
     end
 
     %% === FLOW ===
-    A1 & A2 & A3 --> B1 --> B2 --> B3 --> B4 --> C1 & C2 & C3 & C4 & C5 & C6
+    A1 & A2 & A3 --> B1 --> B2 --> B3 --> B4 --> C1 & C2 & C3 & C4 & C5 & C6 & C7
 
     %% === STYLING ===
     classDef input fill:#E3F2FD,stroke:#2196F3,stroke-width:2px,color:#0D47A1;
@@ -186,7 +187,7 @@ flowchart LR
 
     class A1,A2,A3 input;
     class B1,B2,B3,B4 core;
-    class C1,C2,C3,C4,C5,C6 output;
+    class C1,C2,C3,C4,C5,C6,C7 output;
 ```
 
 ---
