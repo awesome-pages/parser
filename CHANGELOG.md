@@ -1,3 +1,12 @@
+# [1.1.0](https://github.com/awesome-pages/parser/compare/v1.0.0...v1.1.0) (2025-11-10)
+
+
+### Features
+
+* **api:** integrate CSV artifact into schema and runner ([7d625e5](https://github.com/awesome-pages/parser/commit/7d625e5d14226341bc7cce29cfffbba5578a30e1))
+* **artifacts:** add CSV generation with RFC 4180 compliance ([5e797ab](https://github.com/awesome-pages/parser/commit/5e797ab8112736afbd31548d2c5fed00cde345a7)), closes [#27](https://github.com/awesome-pages/parser/issues/27)
+* **docs:** update architecture diagram to include CSV output [#27](https://github.com/awesome-pages/parser/issues/27) ([6aa744a](https://github.com/awesome-pages/parser/commit/6aa744ac3358d1a7c60068a4575107de92b9f822))
+
 # 1.0.0 (2025-11-10)
 
 
