@@ -1,23 +1,23 @@
 /**
  * Simple smoke test to verify the public API exports
  */
-import { describe, it, expect } from 'vitest';
-import {
-	parse,
-	generateDomainV1JsonSchema,
-	generateBookmarksHtml,
-	buildIndex,
-} from './index';
+import { describe, expect, it } from 'vitest';
 import type {
-	DomainV1,
-	SectionV1,
-	ItemV1,
-	ParseOptions,
-	SourceSpec,
-	OutputTarget,
 	Artifact,
+	DomainV1,
+	ItemV1,
+	OutputTarget,
+	ParseOptions,
 	ParseResultFile,
 	SearchIndex,
+	SectionV1,
+	SourceSpec,
+} from './index';
+import {
+	buildIndex,
+	generateBookmarksHtml,
+	generateDomainV1JsonSchema,
+	parse,
 } from './index';
 
 describe('Public API exports', () => {
@@ -37,7 +37,14 @@ describe('Public API exports', () => {
 	it('should export type guards work correctly', () => {
 		// This is a compile-time test - if it compiles, the types are exported correctly
 		const artifact: Artifact = 'domain';
-		expect(['domain', 'index', 'bookmarks', 'sitemap', 'rss-json', 'rss-xml']).toContain(artifact);
+		expect([
+			'domain',
+			'index',
+			'bookmarks',
+			'sitemap',
+			'rss-json',
+			'rss-xml',
+		]).toContain(artifact);
 
 		const section: SectionV1 = {
 			id: 'test',

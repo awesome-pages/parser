@@ -1,10 +1,10 @@
-import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
 import { describe, expect, it } from 'vitest';
-import { generateDomainV1JsonSchema } from './jsonSchema';
 import type { DomainV1 } from './domain.v1';
+import { generateDomainV1JsonSchema } from './jsonSchema';
 
 describe('DomainV1 Real JSON Files Validation', () => {
 	const ajv = new Ajv({ strict: true, allErrors: true });
