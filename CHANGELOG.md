@@ -66,16 +66,3 @@
 * **sources:** implement HTTP conditional requests with ETag/Last-Modified ([571cbad](https://github.com/awesome-pages/parser/commit/571cbad8add6a0c84f8d83dfd739f9e824cf8315)), closes [#23](https://github.com/awesome-pages/parser/issues/23)
 * **stopwords:** add language-specific stopwords with tech whitelist ([eae5d06](https://github.com/awesome-pages/parser/commit/eae5d0652e8b8d99e79e50205dea0b5ae82c1d3f))
 * **utils:** add slug utility function ([9b55ab1](https://github.com/awesome-pages/parser/commit/9b55ab1c7f1f31de58e6dd2226e2c4a219ec0493))
-
-# Changelog
-
-All notable changes to this project will be documented in this file.
-
-This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Unreleased]
-
-- Initial release preparation
-- Public API surface defined
-- ESM/CJS dual build configuration
-- Automated semantic-release setup
