@@ -1,9 +1,14 @@
 import { HttpResponse, http } from 'msw';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { NoopCacheManager } from '@/cache/manager';
 import type { RemoteCacheEntry } from '@/cache/types';
 import { server } from '@/tests/server';
 import { GitHubContentsApiSource } from './githubContents';
+
+// Always avoid hitting gh CLI/token discovery during tests
+vi.mock('@/sources/resolveGithubToken', () => ({
+	resolveGithubToken: vi.fn(async () => undefined),
+}));
 
 class MockCacheManager extends NoopCacheManager {
 	private entries = new Map<string, RemoteCacheEntry>();
