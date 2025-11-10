@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import fg from 'fast-glob';
 import { generateBookmarksHtml } from '@/api/artifacts/generateBookmarksHtml';
+import { generateCsv } from '@/api/artifacts/generateCsv';
 import { generateJsonFeed } from '@/api/artifacts/generateJsonFeed';
 import { generateRssXml } from '@/api/artifacts/generateRssXml';
 import { generateSitemap } from '@/api/artifacts/generateSitemap';
@@ -140,5 +141,7 @@ async function emitArtifact(
 			return generateJsonFeed(domain);
 		case 'rss-xml':
 			return generateRssXml(domain);
+		case 'csv':
+			return generateCsv(domain);
 	}
 }

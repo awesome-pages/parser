@@ -7,7 +7,8 @@ export type Artifact =
 	| 'bookmarks'
 	| 'sitemap'
 	| 'rss-json'
-	| 'rss-xml';
+	| 'rss-xml'
+	| 'csv';
 
 export type OutputTarget = {
 	/** One or more artifacts to emit for this source */

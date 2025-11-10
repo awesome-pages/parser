@@ -8,6 +8,7 @@ export const ArtifactSchema = z.enum([
 	'sitemap',
 	'rss-json',
 	'rss-xml',
+	'csv',
 ]);
 export type ArtifactZ = z.infer<typeof ArtifactSchema>;
 
