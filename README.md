@@ -228,6 +228,12 @@ A feed in [JSON Feed v1.1](https://jsonfeed.org/version/1.1) format. Modern, JSO
 
 A classic RSS 2.0 XML feed compatible with traditional feed readers like Feedly, Inoreader, and Thunderbird. Each item with a URL becomes a feed entry.
 
+### 7. `csv` (CSV)
+
+A comma-separated values file containing all items and their metadata. Ideal for spreadsheet applications, data analysis, or importing into databases.
+
+---
+
 ## API Reference
 
 ### `parse(options: ParseOptions): Promise<ParseResultFile[]>`
